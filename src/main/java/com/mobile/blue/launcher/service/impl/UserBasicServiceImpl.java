@@ -276,7 +276,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 			int count=userDao.countByExample(userExample, criteria);
 			page.setCount(count);
 		}else{
-			if(nextpage>=page.getTotal()){
+			if(nextpage>page.getTotal()){
 				return null;
 			}
 			page.setCurrent(nextpage);
@@ -314,7 +314,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 			int count=userDao.countByExample(userExample, criteria);
 			page.setCount(count);
 		}else{
-			if(nextpage>=page.getTotal()){
+			if(nextpage>page.getTotal()){
 				return null;
 			}
 			page.setCurrent(nextpage);

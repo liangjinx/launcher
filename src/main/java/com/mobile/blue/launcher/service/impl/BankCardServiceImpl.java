@@ -42,7 +42,7 @@ public class BankCardServiceImpl implements BankCardService {
 			int count=bankCardDao.countCard(example, criteria);
 			page.setCount(count);
 		}else{
-			if(nextPage>=page.getTotal()){
+			if(nextPage>page.getTotal()){
 				return null;
 			}
 			page.setCurrent(nextPage);

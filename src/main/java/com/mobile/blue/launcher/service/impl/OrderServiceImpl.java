@@ -79,7 +79,7 @@ public class OrderServiceImpl implements OrderService {
 			int count = orderDao.countByExample(example, criteria);
 			page.setCount(count);
 		} else {
-			if(nextpage>=page.getTotal()){
+			if(nextpage>page.getTotal()){
 				return null;
 			}
 			page.setCurrent(nextpage);
@@ -343,7 +343,7 @@ public class OrderServiceImpl implements OrderService {
 			int count = orderDao.countByRanking(example, criteria);
 			page.setCount(count);
 		} else {
-			if(nextPage>=page.getTotal()){
+			if(nextPage>page.getTotal()){
 				return null;
 			}
 			page.setCurrent(nextPage);

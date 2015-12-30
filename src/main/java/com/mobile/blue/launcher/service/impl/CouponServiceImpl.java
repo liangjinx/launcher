@@ -44,7 +44,7 @@ public class CouponServiceImpl implements CouponService {
 			int count=couponDao.countCoupon(example, criteria);
 			page.setCount(count);
 		}else{
-			if(nextPage>=page.getTotal()){
+			if(nextPage>page.getTotal()){
 				return null;
 			}
 			page.setCurrent(nextPage);

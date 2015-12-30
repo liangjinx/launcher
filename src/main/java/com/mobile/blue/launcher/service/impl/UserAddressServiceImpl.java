@@ -40,7 +40,7 @@ public class UserAddressServiceImpl implements UserAddressService {
 			int count=useraddressDao.countByExample(userAddressExample, criteria);
 			page.setCount(count);
 		}else{
-			if(nextPage>=page.getTotal()){
+			if(nextPage>page.getTotal()){
 				return null;
 			}
 			page.setCurrent(nextPage);

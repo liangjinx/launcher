@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface EarningsService {
 
-	List<Map<String, Object>> selectInvestList(long userID);
+	List<Map<String, Object>> selectInvestList(long userID, HttpServletRequest request, int nextPage);
 
 	String selectInvestOne(long userId, long projectId);
 

@@ -83,6 +83,7 @@ public class ProjectServiceImpl implements ProjectService {
 			map.put("paincbuyProjectId", project.getPaincbuyProjectId());
 			map.put("leftNum", project.getLeftNum());
 			map.put("name", project.getName());
+			returnlist.add(map);
 		}
 		return ResultUtil.getResultJson(returnlist, Status.success.getStatus(), Status.success.getMsg());
 	}

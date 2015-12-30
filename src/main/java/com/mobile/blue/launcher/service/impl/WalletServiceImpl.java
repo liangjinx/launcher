@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.mobile.blue.launcher.dao.WalletDao;
 import com.mobile.blue.launcher.model.AppWallet;
+import com.mobile.blue.launcher.model.AppWithdrawals;
 import com.mobile.blue.launcher.model.Example.AppWalletExample;
 import com.mobile.blue.launcher.model.Example.AppWalletExample.Criteria;
 import com.mobile.blue.launcher.service.BankCardService;
@@ -140,12 +141,16 @@ public class WalletServiceImpl implements WalletService {
 			if (WithdrawalsService.addWithdrawal(userId, money, cardMap.get("account_name").toString(),
 					cardMap.get("bank_code").toString(), cardMap.get("bank").toString(), remark,
 					list.get(0).getWalletId(), cardId, cardMap.get("card_type").toString()) < 1) {
-				return ResultUtil.getResultJson(Status.serverError.getStatus(), Status.serverError.getMsg());
+				return ResultUtil.getResultJson(302, "添加提现记录失败");
 			}
 			// 增加钱包变更记录
+			List<AppWithdrawals> listwith= WithdrawalsService.selectWithdrawall(userId);
+			if(listwith==null || listwith.size()<=0 ){
+				return ResultUtil.getResultJson(303, "该用户没有钱包");
+			}
 			if (walletChangeLogService.addChangeLog(list.get(0).getWalletId(), userId, list.get(0).getMoney(), money,
-					wallet.getMoney(), WithdrawalsService.selectWithdrawall(userId).get(0).getWithwradalsId()) < 1) {
-				return ResultUtil.getResultJson(Status.serverError.getStatus(), Status.serverError.getMsg());
+					wallet.getMoney(), listwith.get(0).getWithwradalsId()) < 1) {
+				return ResultUtil.getResultJson(304, "增加钱包变更记录失败");
 			}
 
 		} else {

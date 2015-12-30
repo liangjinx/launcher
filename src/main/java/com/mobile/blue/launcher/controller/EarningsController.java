@@ -41,10 +41,10 @@ public class EarningsController {
 	 */
 	@RequestMapping(value = "/investList", method = RequestMethod.GET, produces = { "application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object investList(HttpServletRequest request, ModelMap model, long userId)
+	public @ResponseBody Object investList(HttpServletRequest request, ModelMap model, long userId,int nextPage)
 			throws Exception {
 		if (userId != 0) {
-			return ResultUtil.getResultJson(earningsService.selectInvestList(userId),
+			return ResultUtil.getResultJson(earningsService.selectInvestList(userId,request,nextPage),
 					Status.success.getStatus(), Status.success.getMsg());
 		}
 		return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());

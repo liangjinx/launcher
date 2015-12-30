@@ -54,14 +54,34 @@ public class EarningsServiceImpl implements EarningsService {
 	private BulletinService bulletinService;
 
 	@Override
-	public List<Map<String, Object>> selectInvestList(long userId) {
-		AppMyEarningsExample example = new AppMyEarningsExample();
-		Criteria criteria = example.createCriteria();
+	public List<Map<String, Object>> selectInvestList(long userId, HttpServletRequest request, int nextPage) {
+		AppMyEarningsExample example = null;
+		Criteria criteria = null;
 		List<Map<String, Object>> listInvest = new ArrayList<Map<String, Object>>();
+		PageParameter page = (PageParameter) request.getSession().getAttribute("myearningslist");
+		if (page == null) {
+			example = new AppMyEarningsExample();
+			criteria = example.createCriteria();
+			page = new PageParameter(0, BasicConstant.limit_page_size);
+			criteria.andUserIdEqualTo(userId);
+			example.setDistinct(true);
+			example.setOrderByClause("begin_time desc");
+			int count = earningsDao.countByExample(example, criteria);
+			page.setCount(count);
+		} else {
+			if (nextPage > page.getTotal()) {
+				return null;
+			}
+			page.setCurrent(nextPage);
+		}
+		example = new AppMyEarningsExample();
+		criteria = example.createCriteria();
+		example.setOrderByClause("begin_time desc");
 		criteria.andUserIdEqualTo(userId);
 		list = earningsDao.selectByExample(example, criteria);
 		Map<String, Object> map = null;
-		if(list!=null && list.size()>0){
+		if (list != null && list.size() > 0) {
+			request.getSession().setAttribute("myearningslist", page);
 			for (AppMyEarnings earning : list) {
 				map = new HashMap<String, Object>();
 				Map<String, Object> orderMap = orderService.selectByUserIdAndProjectId(userId,
@@ -97,9 +117,10 @@ public class EarningsServiceImpl implements EarningsService {
 		Map<String, Object> orderMap = orderService.selectByUserIdAndProjectId(userId, projectId);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("rate", list.get(0).getRate());
-		map.put("earningsId", list.get(0).getEarningsId());//DateUtil.format(list.get(0).getBeginTime(), BasicConstant.DATE_PATTERN)
-		map.put("beginTime", list.get(0).getBeginTime()==null?null:list.get(0).getBeginTime().getTime());
-		map.put("endTime", list.get(0).getEndTime()==null?null:list.get(0).getEndTime().getTime());
+		map.put("earningsId", list.get(0).getEarningsId());// DateUtil.format(list.get(0).getBeginTime(),
+															// BasicConstant.DATE_PATTERN)
+		map.put("beginTime", list.get(0).getBeginTime() == null ? null : list.get(0).getBeginTime().getTime());
+		map.put("endTime", list.get(0).getEndTime() == null ? null : list.get(0).getEndTime().getTime());
 		map.put("projectSum", projectMap.get("num"));
 		map.put("leftNum", projectMap.get("left_num"));
 		map.put("paincbuyProjectId", projectId);
@@ -123,7 +144,7 @@ public class EarningsServiceImpl implements EarningsService {
 		criteria.andEndTimeGreaterThanOrEqualTo(DateUtil.getCurrentDate());
 		criteria.andDealStatusEqualTo(new Integer(0).byteValue());
 		list = earningsDao.selectByExample(example, criteria);// 查询该用户的没有结束的收益状态
-		Map<String, Object> map = null; 
+		Map<String, Object> map = null;
 		if (list.size() <= 0) {
 			return "";
 		}
@@ -131,10 +152,9 @@ public class EarningsServiceImpl implements EarningsService {
 		for (AppMyEarnings earning : list) {
 			map = new HashMap<String, Object>();
 			map.put("returnWaySelectLastTime",
-							DateUtil.getBeforeDate(earning.getEndTime(),
-									Integer.parseInt(
-											sysconfigService.queryByCode(SysConstant.CONFIRM_REWARDS_BEFORE_N_DAYS))).getTime()
-					);
+					DateUtil.getBeforeDate(earning.getEndTime(),
+							Integer.parseInt(sysconfigService.queryByCode(SysConstant.CONFIRM_REWARDS_BEFORE_N_DAYS)))
+					.getTime());
 			map.put("projectName", earning.getPaincbuyProjectName());
 			map.put("projectId", earning.getPaincbuyProjectId());
 			map.put("num", earning.getNum());
@@ -231,9 +251,10 @@ public class EarningsServiceImpl implements EarningsService {
 
 	@Override
 	public List<Map<String, Object>> myearningslist(long userId) {
-		AppMyEarningsExample example = new AppMyEarningsExample();
-		Criteria criteria = example.createCriteria();
-		String day = sysconfigService.queryByCode(SysConstant.GROW_UP_DAYS);
+		AppMyEarningsExample example = null;
+		Criteria criteria = null;
+		example = new AppMyEarningsExample();
+		criteria = example.createCriteria();
 		List<Map<String, Object>> returnlist = new ArrayList<Map<String, Object>>();
 		Map<String, Object> returnmap = null;
 		criteria.andUserIdEqualTo(userId);
@@ -241,6 +262,7 @@ public class EarningsServiceImpl implements EarningsService {
 		if (list == null || list.size() <= 0) {
 			return null;
 		}
+		String day = sysconfigService.queryByCode(SysConstant.GROW_UP_DAYS);
 		for (AppMyEarnings earnings : list) {
 			double d = DateUtil.daysBetween(DateUtil.getAfterDate(earnings.getBeginTime(), 1),
 					DateUtil.getCurrentDate());
@@ -289,31 +311,31 @@ public class EarningsServiceImpl implements EarningsService {
 					Double.parseDouble(DateUtil.daysBetween(earning.getBeginTime(), DateUtil.getCurrentDate()) + "")
 							/ Double.parseDouble(day));
 		}
-		List<AppBulletin> li=bulletinService.selectbullet();
-		if(li!=null && li.size()>0){
+		List<AppBulletin> li = bulletinService.selectbullet();
+		if (li != null && li.size() > 0) {
 			AppBulletin bulletin = li.get(0);
 			returnmap.put("bulletin", bulletin.getContent());
 			returnmap.put("title", bulletin.getTitle());
-		}else{
-			returnmap.put("bulletin","");
-			returnmap.put("title","");
+		} else {
+			returnmap.put("bulletin", "");
+			returnmap.put("title", "");
 		}
 		return returnmap;
 	}
 
 	@Override
-	public String earningsRanking(HttpServletRequest request, long userId,int nextPage) {
+	public String earningsRanking(HttpServletRequest request, long userId, int nextPage) {
 		AppMyEarningsExample example = new AppMyEarningsExample();
 		Criteria criteria = example.createCriteria();
 		String day = sysconfigService.queryByCode(SysConstant.GROW_UP_DAYS);
 		criteria.andUserIdEqualTo(userId);
-		PageParameter page=(PageParameter) request.getSession().getAttribute("earningsRanking");
-		if(page==null){
-			page = new PageParameter(0,BasicConstant.limit_page_size);
-			int count=earningsDao.countByExample(example, criteria);
+		PageParameter page = (PageParameter) request.getSession().getAttribute("earningsRanking");
+		if (page == null) {
+			page = new PageParameter(0, BasicConstant.limit_page_size);
+			int count = earningsDao.countByExample(example, criteria);
 			page.setCount(count);
-		}else{
-			if(nextPage>=page.getTotal()){
+		} else {
+			if (nextPage > page.getTotal()) {
 				return null;
 			}
 			page.setCurrent(nextPage);

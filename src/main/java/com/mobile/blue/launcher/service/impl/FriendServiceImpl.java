@@ -92,7 +92,7 @@ public class FriendServiceImpl implements FriendService {
 		if(notfriendlist!=null && notfriendlist.size()>0){
 			for(AppUser user:notfriendlist){
 				notfriendMap=new HashMap<String, Object>();
-				notfriendMap.put("UserId", user.getUserId());
+				notfriendMap.put("userId", user.getUserId());
 				notfriendMap.put("username", user.getUsername());
 				notfriendMap.put("nickname", user.getNickname());
 				notfriendMap.put("sex", user.getSex());
@@ -240,7 +240,7 @@ public class FriendServiceImpl implements FriendService {
 		if(oldFriendlist!=null && oldFriendlist.size()>0){
 			for(AppUser user:oldFriendlist){
 				oldfriendMap=new HashMap<String, Object>();
-				oldfriendMap.put("UserId", user.getUserId());
+				oldfriendMap.put("userId", user.getUserId());
 				oldfriendMap.put("username", user.getUsername());
 				oldfriendMap.put("nickname", user.getNickname());
 				oldfriendMap.put("sex", user.getSex());
