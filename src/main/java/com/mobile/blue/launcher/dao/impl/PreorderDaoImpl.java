@@ -1,5 +1,7 @@
 package com.mobile.blue.launcher.dao.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +54,13 @@ public class PreorderDaoImpl implements PreorderDao {
 		int value = appPreorderMapper.deleteByPrimaryKey(preorder);
 		System.out.println(value);
 		return value;
+	}
+
+	@Override
+	public List<AppPreorder> selectByexample(AppPreorderExample example, Criteria criteria) {
+		List<AppPreorder> list=appPreorderMapper.selectByExample(example);
+		criteria.getAllCriteria().clear();
+		return list;
 	}
 
 }

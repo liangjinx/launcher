@@ -1,5 +1,8 @@
 package com.mobile.blue.launcher.dao;
 
+import java.util.List;
+
+import com.mobile.blue.launcher.model.AppPreorder;
 import com.mobile.blue.launcher.model.Example.AppPreorderExample;
 import com.mobile.blue.launcher.model.Example.AppPreorderExample.Criteria;
 
@@ -12,5 +15,7 @@ public interface PreorderDao {
 	int insertPreorder(long userId, long projectId, int number);
 
 	int deleteUserPreorder(long userId, long projectId);
+
+	List<AppPreorder> selectByexample(AppPreorderExample example, Criteria criteria);
 
 }

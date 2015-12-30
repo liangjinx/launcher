@@ -9,7 +9,7 @@ public interface ProjectService {
 
 	List<Map<String, Object>> selectCanPreProject();
 
-	String searchProjects();
+	String searchProjects(long userId);
 
 	Map<String, Object> selectCanPreProjectOne();
 

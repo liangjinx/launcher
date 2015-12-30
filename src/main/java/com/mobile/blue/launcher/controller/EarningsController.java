@@ -86,8 +86,8 @@ public class EarningsController {
 	@RequestMapping(value = "/selectPreOrder", method = RequestMethod.GET, produces = {
 			"application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object selectPreOrder(HttpServletRequest request, ModelMap mode) throws Exception {
-		return projectService.searchProjects();
+	public @ResponseBody Object selectPreOrder(HttpServletRequest request, ModelMap mode,long userId) throws Exception {
+		return projectService.searchProjects(userId);
 	}
 
 	// -------------------------------------------------------------------------------------------//

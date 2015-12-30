@@ -1,5 +1,6 @@
 package com.mobile.blue.launcher.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,6 @@ import com.mobile.blue.util.constant.TypeConstant;
 
 @Service("preorderService")
 public class PreorderServiceImpl implements PreorderService {
-	List<AppPreorder> list = null;
 	@Autowired
 	private PreorderDao preorderDao;
 	@Autowired
@@ -29,8 +29,6 @@ public class PreorderServiceImpl implements PreorderService {
 
 	@Override
 	public String saveUserPreSet(long userId, long projectId, byte type, boolean isCancel, int number) {
-		AppPreorderExample example = new AppPreorderExample();
-		Criteria criteria = example.createCriteria();
 		boolean isupdate = false;
 		if (type == TypeConstant.USER_SETTING_TYPE_2) {
 			// 分期抢购
@@ -40,6 +38,8 @@ public class PreorderServiceImpl implements PreorderService {
 					return ResultUtil.getResultJson(Status.saleNumNotEnough.getStatus(),
 							Status.saleNumNotEnough.getMsg());
 				}
+				AppPreorderExample example = new AppPreorderExample();
+				Criteria criteria = example.createCriteria();
 				criteria.andUserIdEqualTo(userId);
 				criteria.andProjectIdEqualTo(projectId);
 				int flag = preorderDao.countByExample(example, criteria);
@@ -52,6 +52,7 @@ public class PreorderServiceImpl implements PreorderService {
 					value = preorderDao.insertPreorder(userId, projectId, number);
 				}
 				if (value >= 1) {
+					//表示保存用户预强成功
 					int count = userExtService.selectUserExt(userId);
 					if (count != 1) {
 						userExtService.insertUserExt(userId, projectId, number, type);
@@ -68,7 +69,7 @@ public class PreorderServiceImpl implements PreorderService {
 		} else if (type == TypeConstant.USER_SETTING_TYPE_1) {
 			// 表示每期都抢
 			if (isCancel) {
-				// 取消每期都抢，则把类型改成不抢购
+				// 取消抢购该项目，则把类型改成不抢购
 				type = 0;
 			} else {
 				// 保存最近可以抢购的项目
@@ -95,5 +96,19 @@ public class PreorderServiceImpl implements PreorderService {
 		if (isupdate)
 			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
 		return ResultUtil.getResultJson(Status.saveFail.getStatus(), Status.saveFail.getMsg());
+	}
+
+	@Override
+	public int selectByUserIdAndProjectId(long userId, Long paincbuyProjectId) {
+		AppPreorderExample example = new AppPreorderExample();
+		Criteria criteria = example.createCriteria();
+		List<AppPreorder> list = new ArrayList<>();
+		criteria.andUserIdEqualTo(userId);
+		criteria.andProjectIdEqualTo(paincbuyProjectId);
+		list=preorderDao.selectByexample(example,criteria);
+		if(list==null || list.size()<=0){
+			return 0;
+		}
+		return list.get(0).getNum();
 	}
 }

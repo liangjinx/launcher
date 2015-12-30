@@ -12,6 +12,7 @@ import com.mobile.blue.launcher.dao.ProjectDao;
 import com.mobile.blue.launcher.model.AppProject;
 import com.mobile.blue.launcher.model.Example.AppProjectExample;
 import com.mobile.blue.launcher.model.Example.AppProjectExample.Criteria;
+import com.mobile.blue.launcher.service.PreorderService;
 import com.mobile.blue.launcher.service.ProjectService;
 import com.mobile.blue.util.DateUtil;
 import com.mobile.blue.util.ResultUtil;
@@ -22,7 +23,8 @@ public class ProjectServiceImpl implements ProjectService {
 	List<AppProject> list = null;
 	@Autowired
 	private ProjectDao projectDao;
-
+	@Autowired
+	private PreorderService preorderService;
 	@Override
 	public Map<String, Object> selectById(Long paincbuyProjectId) {
 		AppProjectExample example = new AppProjectExample();
@@ -71,7 +73,7 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public String searchProjects() {
+	public String searchProjects(long userId) {
 		AppProjectExample example = new AppProjectExample();
 		Criteria criteria = example.createCriteria();
 		List<Map<String, Object>> returnlist = new ArrayList<Map<String, Object>>();
@@ -83,7 +85,11 @@ public class ProjectServiceImpl implements ProjectService {
 			map.put("paincbuyProjectId", project.getPaincbuyProjectId());
 			map.put("leftNum", project.getLeftNum());
 			map.put("name", project.getName());
+<<<<<<< Updated upstream
 			returnlist.add(map);
+=======
+			map.put("preNum", preorderService.selectByUserIdAndProjectId(userId,project.getPaincbuyProjectId()));
+>>>>>>> Stashed changes
 		}
 		return ResultUtil.getResultJson(returnlist, Status.success.getStatus(), Status.success.getMsg());
 	}

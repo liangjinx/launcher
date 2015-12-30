@@ -58,6 +58,25 @@ public class Walletcontroller {
 		}
 		return ResultUtil.getResultJson(Status.bankCardIdNullity.getStatus(), Status.bankCardIdNullity.getMsg());
 	}
+/**
+ * 钱包消费记录
+ * @param request
+ * @param model
+ * @param userId
+ * @param cardId
+ * @param money
+ * @param remark
+ * @return
+ * @throws Exception
+ */
+	@RequestMapping(value = "/walletHistory", method = RequestMethod.GET, produces = {
+			"application/json;charset=UTF-8" })
+	@Transactional
+	public @ResponseBody Object walletHistory(HttpServletRequest request, ModelMap model, long userId, long cardId,
+			double money, String remark) throws Exception {
+//		return walletService.walletHistory(userId, cardId, money, remark);
+		return null;
+	}
 
 	// —————钱包管理—————————————————————————————————/
 	@RequestMapping(value = "/updateWalletPassword", method = RequestMethod.GET, produces = {
