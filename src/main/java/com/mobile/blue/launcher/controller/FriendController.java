@@ -14,7 +14,6 @@ import com.mobile.blue.launcher.service.FriendService;
 import com.mobile.blue.util.DateUtil;
 import com.mobile.blue.util.ResultUtil;
 import com.mobile.blue.util.constant.StatusConstant.Status;
-import com.mobile.blue.util.constant.BasicConstant;
 import com.mobile.blue.util.constant.TypeConstant;
 
 @Controller

@@ -430,8 +430,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 		user.setUserId(Long.parseLong(request.getHeader("userId")));
 
 		String fileAccessPath = "/" + DateUtil.getCurrentDateStr(BasicConstant.DATE_PATH_FILE) + "//headImgFile/";
-//		String uploadPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_UPLOAD_ROOT_PATH) + fileAccessPath;
-		String uploadPath="http://wx.bajiewg.com/resources/"+fileAccessPath;
+		String uploadPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_UPLOAD_ROOT_PATH) + fileAccessPath;
 		fileAccessPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_ACCESS_URL) + fileAccessPath;
 		String newFileName = System.currentTimeMillis() + "." + fileTypes;
 		logger.info("uploadPath:"+uploadPath+",newFileName:"+newFileName);
