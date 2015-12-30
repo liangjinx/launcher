@@ -25,7 +25,6 @@ public class WithdrawalsDaoImpl implements WithdrawalsDao {
 	public List<AppWithdrawals> selectByExample(AppWithdrawalsExample example, Criteria criteria) {
 		List<AppWithdrawals> list = appWithdrawalsMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 

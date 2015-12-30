@@ -20,7 +20,6 @@ public class CouponDaoImpl implements CouponDao {
 	public List<AppCoupon> selectByExample(AppCouponExample example, Criteria criteria) {
 		List<AppCoupon> list = appCouponMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 
@@ -28,7 +27,6 @@ public class CouponDaoImpl implements CouponDao {
 	public int countCoupon(AppCouponExample example, Criteria criteria) {
 		int count = appCouponMapper.countByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 

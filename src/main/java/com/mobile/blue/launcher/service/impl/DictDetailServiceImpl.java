@@ -92,7 +92,8 @@ public class DictDetailServiceImpl implements DictDetailService {
 		}
 		for(BankNameVo dictdefatl:banklist){
 			returnmap=new HashMap<String, Object>();
-			returnmap.put(dictdefatl.getBankName(),dictdefatl.getValue());
+			returnmap.put("bankName",dictdefatl.getBankName());
+			returnmap.put("value",dictdefatl.getValue());
 			returnlist.add(returnmap);
 		}
 		return returnlist;

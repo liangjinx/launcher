@@ -21,7 +21,6 @@ public class OrderAddressDaoImpl implements OrderAddressDao {
 	public List<AppOrderAddress> selectByExample(AppOrderAddressExample example, Criteria criteria) {
 		List<AppOrderAddress> list = appOrderAddressMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 

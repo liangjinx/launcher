@@ -25,7 +25,6 @@ public class WalletDaoOmpl implements WalletDao {
 		}
 		BigDecimal count = list.get(0).getMoney();
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 
@@ -33,7 +32,6 @@ public class WalletDaoOmpl implements WalletDao {
 	public int countByExample(AppWalletExample example, Criteria criteria) {
 		int count = appWalletMapper.countByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 
@@ -49,7 +47,6 @@ public class WalletDaoOmpl implements WalletDao {
 	public List<AppWallet> selectByExample(AppWalletExample example, Criteria criteria) {
 		List<AppWallet> list = appWalletMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 

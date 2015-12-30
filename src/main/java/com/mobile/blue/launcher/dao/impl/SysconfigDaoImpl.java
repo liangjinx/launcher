@@ -20,7 +20,6 @@ public class SysconfigDaoImpl implements SysconfigDao {
 	public List<AppSysConfig> selectByExample(AppSysConfigExample sysConfigExample, Criteria criteria) {
 		List<AppSysConfig> list = appSysconfigMapper.selectByExample(sysConfigExample);
 		criteria.getAllCriteria().clear();
-		sysConfigExample.clear();
 		if (list.size() <= 0) {
 			return null;
 		}

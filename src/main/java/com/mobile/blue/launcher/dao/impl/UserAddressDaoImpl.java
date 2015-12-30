@@ -25,7 +25,6 @@ public class UserAddressDaoImpl implements UseraddressDao {
 	public List<AppUserAddress> selectByExample(AppUserAddressExample userAddressExample, Criteria criteria) {
 		List<AppUserAddress> list = appUserAddressMapper.selectByExample(userAddressExample);
 		criteria.getAllCriteria().clear();
-		userAddressExample.clear();
 		return list;
 	}
 
@@ -33,7 +32,6 @@ public class UserAddressDaoImpl implements UseraddressDao {
 	public int countByExample(AppUserAddressExample userAddressExample, Criteria criteria) {
 		int value = appUserAddressMapper.countByExample(userAddressExample);
 		criteria.getAllCriteria().clear();
-		userAddressExample.clear();
 		return value;
 	}
 

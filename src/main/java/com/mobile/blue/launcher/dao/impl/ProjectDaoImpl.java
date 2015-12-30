@@ -20,7 +20,6 @@ public class ProjectDaoImpl implements ProjectDao {
 	public List<AppProject> selectByExample(AppProjectExample example, Criteria criteria) {
 		List<AppProject> list = appProjectMapper.selectByExampleWithBLOBs(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 

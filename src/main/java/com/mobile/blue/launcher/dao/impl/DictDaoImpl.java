@@ -20,7 +20,6 @@ public class DictDaoImpl implements DictDao {
 	public List<AppDict> selectByExamlpe(AppDictExample example, Criteria criteria) {
 		List<AppDict> list = appDictMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 

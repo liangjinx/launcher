@@ -112,7 +112,6 @@ public class ProjectServiceImpl implements ProjectService {
 		map.put("left_num", project.getLeftNum());
 		map.put("other_fee", project.getOtherFee());
 		map.put("other_fee_detail", project.getOtherFee());
-		map.put("detail", project.getDetail());
 		map.put("variety", project.getVariety());
 		map.put("price", project.getPrice());
 		map.put("status", project.getStatus());

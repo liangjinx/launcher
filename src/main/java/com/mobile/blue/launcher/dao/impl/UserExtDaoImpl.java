@@ -38,7 +38,6 @@ public class UserExtDaoImpl implements UserExtDao {
 	public int selectUserExt(AppUserExtExample example, Criteria criteria) {
 		int count = appUserExtMapper.countByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 

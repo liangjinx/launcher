@@ -21,7 +21,6 @@ public class DictDetailDaoImpl implements DictDetailDao {
 	public List<AppDictDefatl> selectselectGrowdefatl(AppDictDefatlExample example, Criteria criteria) {
 		List<AppDictDefatl> list = appDictDefatlMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 
@@ -29,7 +28,6 @@ public class DictDetailDaoImpl implements DictDetailDao {
 	public List<BankNameVo> selectBankNamelist(AppDictDefatlExample example, Criteria criteria) {
 		List<BankNameVo> list = appDictDefatlMapper.selectBankNamelist(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 
@@ -37,7 +35,6 @@ public class DictDetailDaoImpl implements DictDetailDao {
 	public int countByExample(AppDictDefatlExample example, Criteria criteria) {
 		int count =appDictDefatlMapper.countByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 

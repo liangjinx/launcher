@@ -15,7 +15,6 @@ import com.mobile.blue.launcher.service.EarningsService;
 import com.mobile.blue.launcher.service.PreorderService;
 import com.mobile.blue.launcher.service.ProjectService;
 import com.mobile.blue.util.ResultUtil;
-import com.mobile.blue.util.constant.BasicConstant;
 import com.mobile.blue.util.constant.StatusConstant.Status;
 
 @Controller
@@ -42,10 +41,10 @@ public class EarningsController {
 	 */
 	@RequestMapping(value = "/investList", method = RequestMethod.GET, produces = { "application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object investList(HttpServletRequest request, ModelMap model, long userId, int nextPage)
+	public @ResponseBody Object investList(HttpServletRequest request, ModelMap model, long userId)
 			throws Exception {
 		if (userId != 0) {
-			return ResultUtil.getResultJson(earningsService.selectInvestList(userId, request, nextPage),
+			return ResultUtil.getResultJson(earningsService.selectInvestList(userId),
 					Status.success.getStatus(), Status.success.getMsg());
 		}
 		return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
@@ -127,12 +126,12 @@ public class EarningsController {
 	// -------------------------对猪仔的操作------------------------------------------------------------------//
 	@RequestMapping(value = "/selectMyPig", method = RequestMethod.GET, produces = { "application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object selectMyPig(HttpServletRequest request, ModelMap model, long userId, int nextPage)
+	public @ResponseBody Object selectMyPig(HttpServletRequest request, ModelMap model, long userId)
 			throws Exception {
 		if (userId == 0){
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 		}
-		return earningsService.selectMyPig(userId, request, nextPage);
+		return earningsService.selectMyPig(userId);
 	}
 
 	@RequestMapping(value = "/sendFriendPig", method = RequestMethod.GET, produces = {
@@ -162,9 +161,8 @@ public class EarningsController {
 	@RequestMapping(value = "/myearningslist", method = RequestMethod.GET, produces = {
 			"application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object myearningslist(HttpServletRequest request, ModelMap model, long userId,
-			int nextPage) throws Exception {
-		return ResultUtil.getResultJson(earningsService.myearningslist(request, userId, nextPage),
+	public @ResponseBody Object myearningslist(HttpServletRequest request, ModelMap model, long userId) throws Exception {
+		return ResultUtil.getResultJson(earningsService.myearningslist( userId),
 				Status.success.getStatus(), Status.success.getMsg());
 	}
 

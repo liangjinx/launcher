@@ -20,7 +20,6 @@ public class AreaDaoImpl implements AreaDao {
 	public List<AppArea> selectByExample(AppAreaExample example, Criteria criteria) {
 		List<AppArea> list = appAreaMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 
@@ -28,7 +27,6 @@ public class AreaDaoImpl implements AreaDao {
 	public int countByExample(AppAreaExample appareaExample,Criteria criteria) {
 		int count =appAreaMapper.countByExample(appareaExample);
 		criteria.getAllCriteria().clear();
-		appareaExample.clear();
 		return count;
 	}
 

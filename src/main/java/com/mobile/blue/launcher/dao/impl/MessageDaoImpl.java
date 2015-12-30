@@ -24,7 +24,6 @@ public class MessageDaoImpl implements MessageDao {
 	public List<AppMessage> selectByExample(AppMessageExample example, Criteria criteria) {
 		List<AppMessage> list = appMessageMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 
@@ -32,7 +31,6 @@ public class MessageDaoImpl implements MessageDao {
 	public int countByExample(AppMessageExample example, Criteria criteria) {
 		int count = appMessageMapper.countByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 

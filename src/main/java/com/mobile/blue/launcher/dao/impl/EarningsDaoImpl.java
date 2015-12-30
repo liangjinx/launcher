@@ -20,7 +20,6 @@ public class EarningsDaoImpl implements EarningsDao {
 	public List<AppMyEarnings> selectByExample(AppMyEarningsExample earningsExample, Criteria criteria) {
 		List<AppMyEarnings> list = appMyEarningsMapper.selectByExample(earningsExample);
 		criteria.getAllCriteria().clear();
-		earningsExample.clear();
 		return list;
 	}
 
@@ -28,7 +27,6 @@ public class EarningsDaoImpl implements EarningsDao {
 	public int countByExample(AppMyEarningsExample earningsExample, Criteria criteria) {
 		int count = appMyEarningsMapper.countByExample(earningsExample);
 		criteria.getAllCriteria().clear();
-		earningsExample.clear();
 		return count;
 	}
 

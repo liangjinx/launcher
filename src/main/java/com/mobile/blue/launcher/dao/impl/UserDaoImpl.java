@@ -20,7 +20,6 @@ public class UserDaoImpl implements UserDao {
 	public int countByExample(AppUserExample userExample, Criteria criteria) {
 		int count = appUserMapper.countByExample(userExample);
 		criteria.getAllCriteria().clear();
-		userExample.clear();
 		return count;
 	}
 
@@ -28,7 +27,6 @@ public class UserDaoImpl implements UserDao {
 	public List<AppUser> selectByExample(AppUserExample userExample, Criteria criteria) {
 		List<AppUser> list = appUserMapper.selectByExample(userExample);
 		criteria.getAllCriteria().clear();
-		userExample.clear();
 		return list;
 	}
 

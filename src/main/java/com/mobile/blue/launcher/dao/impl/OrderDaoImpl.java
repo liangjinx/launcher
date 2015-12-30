@@ -21,7 +21,6 @@ public class OrderDaoImpl implements OrderDao {
 	public List<AppOrder> selectByExample(AppOrderExample example, Criteria criteria) {
 		List<AppOrder> list = apporderMappser.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 
@@ -54,7 +53,6 @@ public class OrderDaoImpl implements OrderDao {
 	public int countByExample(AppOrderExample example, Criteria criteria) {
 		int count=apporderMappser.countByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 
@@ -68,7 +66,6 @@ public class OrderDaoImpl implements OrderDao {
 	public List<OrderRankingVo> selectByRanking(AppOrderExample example, Criteria criteria) {
 		List<OrderRankingVo> list = apporderMappser.selectByRanking(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 

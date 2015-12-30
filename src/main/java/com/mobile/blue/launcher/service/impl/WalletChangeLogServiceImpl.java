@@ -22,7 +22,7 @@ public class WalletChangeLogServiceImpl implements WalletChangeLogService {
 		changelog.setWalletId(walletId);
 		changelog.setUserId(userId);
 		changelog.setBeforeMoney(beforeMoney);
-		changelog.setAfterMoney(new BigDecimal(changeMoney));
+		changelog.setChangeMoney(new BigDecimal(changeMoney));
 		changelog.setAfterMoney(afterMoney);
 		changelog.setChangeType(Byte.valueOf("1"));
 		changelog.setChangeTime(DateUtil.getCurrentDate());

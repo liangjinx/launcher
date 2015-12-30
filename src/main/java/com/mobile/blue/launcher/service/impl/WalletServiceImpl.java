@@ -268,7 +268,7 @@ public class WalletServiceImpl implements WalletService {
 		winxisend.setMch_id(map.get("mch_id").toString());
 		winxisend.setNonce_str(RandomUtils.getNum(32));
 		winxisend.setBody(order.getRemark() == null ? "购买猪仔" : order.getRemark());
-		winxisend.setOut_trade_no(((Map<String, Object>)orderService.addOrder(order)).get("orderCode").toString());
+		winxisend.setOut_trade_no(((Map<String, Object>) orderService.addOrder(order)).get("orderCode").toString());
 		winxisend.setTotal_fee(order.getTotalMoney().intValue());
 		winxisend.setSpbill_create_ip(remoteIp == null ? "127.0.0.1" : remoteIp);
 		winxisend.setNotify_url("http://pctest.bajiewg.com/WXnotify");
@@ -349,8 +349,8 @@ public class WalletServiceImpl implements WalletService {
 		// returnmap.put("cash_fee", jsonObject.getString("cash_fee"));
 		returnmap.put("transaction_id", jsonObject.getString("transaction_id"));
 		returnmap.put("out_trade_no", jsonObject.getString("out_trade_no"));
-		returnmap.put("time_end", DateUtil.parseDate(jsonObject.getString("time_end"))
-				==null?null:DateUtil.parseDate(jsonObject.getString("time_end")).getTime());
+		returnmap.put("time_end", DateUtil.parseDate(jsonObject.getString("time_end")) == null ? null
+				: DateUtil.parseDate(jsonObject.getString("time_end")).getTime());
 		returnmap.put("trade_state_desc", jsonObject.getString("trade_state_desc"));
 		return ResultUtil.getResultJson(returnmap, Status.success.getStatus(), Status.success.getMsg());
 	}
@@ -404,101 +404,4 @@ public class WalletServiceImpl implements WalletService {
 		}
 		return sb.toString();
 	}
-
-	/**
-	 * 银联支付
-	 * 
-	 * @throws DocumentException
-	 * @throws IOException
-	 * @throws HttpException
-	 * @throws Exception
-	 */
-	@Override
-	public String requestForYL(RequestOrderVo order) throws Exception {
-		Map<String, String> json = new HashMap<>();
-		json = SDKUtil.submitUrl(saveyinlian(order), SDKConfig.getConfig().getAppRequestUrl(), SDKUtil.encoding_UTF8);
-		Map<String, Object> returnmap = new HashMap<>();
-		returnmap.put("encoding", json.get("encoding"));
-		returnmap.put("certId", json.get("certId"));
-		returnmap.put("signMethod", json.get("signMethod"));
-		returnmap.put("txnType", json.get("txnType"));
-		returnmap.put("bizType", json.get("bizType"));
-		returnmap.put("accessType", json.get("accessType"));
-		returnmap.put("merId", json.get("merId"));
-		returnmap.put("tn", json.get("tn"));
-		returnmap.put("orderId", json.get("orderId"));
-		returnmap.put("txnTime", DateUtil.parseDate(json.get("txnTime"))
-				==null?null:DateUtil.parseDate(json.get("txnTime")).getTime());
-		returnmap.put("respCode", json.get("respCode"));
-		returnmap.put("respMsg", json.get("respMsg"));
-		return ResultUtil.getResultJson(returnmap, Status.success.getStatus(), Status.success.getMsg());
-	}
-
-	// 保存银联需要提交的信息
-	@SuppressWarnings("unchecked")
-	private Map<String, String> saveyinlian(RequestOrderVo order) throws Exception {
-		Map<String, String> contentData = new HashMap<String, String>();
-		contentData.put("version", "5.0.0");
-		contentData.put("encoding", "UTF-8");
-		contentData.put("signMethod", "01");
-		contentData.put("txnType", "01");
-		contentData.put("txnSubType", "01");
-		contentData.put("bizType", "000201");
-		contentData.put("channelType", "07");
-		contentData.put("accessType", "0");
-		contentData.put("accType", "01");
-		contentData.put("currencyCode", "156");
-		contentData.put("reqReserved", "透传字段");
-		contentData.put("merId", "777290058110097");
-		contentData.put("orderId", ((Map<String, Object>)orderService.addOrder(order)).get("orderCode").toString());
-		contentData.put("txnTime", System.currentTimeMillis()+"");
-		contentData.put("encryptCertId", CertUtil.getEncryptCertId());
-		contentData.put("accNo", SDKUtil.encryptPan("6216261000000000018", "UTF-8"));
-		Map<String, String> customerInfoMap = new HashMap<String, String>();
-		customerInfoMap.put("certifTp", "01"); // 证件类型
-		customerInfoMap.put("certifId", "341126197709218366"); // 证件号码
-		contentData.put("customerInfo",
-				SDKUtil.getCustomerInfoWithEncrypt(customerInfoMap, "6216261000000000018", SDKUtil.encoding_UTF8));
-		contentData.put("txnAmt", order.getTotalMoney().intValue() + "");
-		contentData.put("backUrl", "http://pctest.bajiewg.com:8080/launcher/ylNotify");
-		contentData.put("payTimeout",DateUtil.getAfterDate(DateUtil.getCurrentDate(), 2).getTime()+"");
-		contentData.put("orderDesc", order.getRemark());
-		return SDKUtil.signData(contentData, SDKUtil.encoding_UTF8); // 报文中certId,signature的值是在signData方法中获取并自动赋值的，只要证书配置正确即可。
-	}
-
-	@Override
-	public String ylNotify(JSONObject jsonObject) throws Exception {
-		if (!"000000".equalsIgnoreCase(jsonObject.getString("respCode"))) {
-			return ResultUtil.getResultJson(Status.serverError.getStatus(), Status.serverError.getMsg());
-		}
-		if (!RSA.verify(CreateLinkString(ParaFilter(jsonObject), "="), jsonObject.getString("signature"),
-				BasicConstant.public_key, "utf-8")) {
-			return ResultUtil.getResultJson(Status.serverError.getStatus(), Status.serverError.getMsg());
-		}
-		if ("000000".equals(jsonObject.getString("respCode"))) {
-			Map<String, Object> map = new HashMap<>();
-			map.put("txnType", jsonObject.getString("txnType"));
-			map.put("bizType", jsonObject.getString("bizType"));
-			map.put("accessType", jsonObject.getString("accessType"));
-			map.put("orderId", jsonObject.getString("orderId"));
-			map.put("merId", jsonObject.getString("merId"));
-			map.put("currencyCode", jsonObject.getString("currencyCode"));
-			map.put("txnAmt", jsonObject.getString("txnAmt"));
-			map.put("txnTime", DateUtil.parseDate(jsonObject.getString("txnTime"))
-					==null?null:DateUtil.parseDate(jsonObject.getString("txnTime")).getTime());
-			map.put("payType", jsonObject.getString("payType"));
-			map.put("payCardType", jsonObject.getString("payCardType"));
-			map.put("queryId", jsonObject.getString("queryId"));
-			map.put("traceNo", jsonObject.getString("traceNo"));
-			map.put("traceTime", DateUtil.parseDate(jsonObject.getString("traceTime"))
-					==null?null:DateUtil.parseDate(jsonObject.getString("traceTime")).getTime());
-			map.put("settleDate", jsonObject.getString("settleDate"));
-			map.put("payCardIssueName", jsonObject.getString("payCardIssueName"));
-			return ResultUtil.getResultJson(map, Status.success.getStatus(), Status.success.getMsg());
-		} else {
-			return ResultUtil.getResultJson(Integer.parseInt(jsonObject.getString("respCode")),
-					jsonObject.getString("respMsg"));
-		}
-	}
-
 }

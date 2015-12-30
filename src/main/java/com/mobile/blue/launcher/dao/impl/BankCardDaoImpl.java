@@ -20,7 +20,6 @@ public class BankCardDaoImpl implements BankCardDao {
 	public List<AppUserBankCard> bankCardList(AppUserBankCardExample example, Criteria criteria) {
 		List<AppUserBankCard> list = appBankCardMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 
@@ -33,7 +32,6 @@ public class BankCardDaoImpl implements BankCardDao {
 	public int countCard(AppUserBankCardExample example, Criteria criteria) {
 		int count = appBankCardMapper.countByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 

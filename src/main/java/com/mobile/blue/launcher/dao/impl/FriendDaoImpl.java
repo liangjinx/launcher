@@ -27,7 +27,6 @@ public class FriendDaoImpl implements FriendDao {
 	public List<AppFriend> selectFriends(AppFriendExample freindsExample, Criteria criteria) {
 		List<AppFriend> list = appFriendMapper.selectByExample(freindsExample);
 		criteria.getAllCriteria().clear();
-		freindsExample.clear();
 		return list;
 	}
 
@@ -35,7 +34,6 @@ public class FriendDaoImpl implements FriendDao {
 	public int countByExample(AppFriendExample freindsExample, Criteria criteria) {
 		int count = appFriendMapper.countByExample(freindsExample);
 		criteria.getAllCriteria().clear();
-		freindsExample.clear();
 		return count;
 	}
 

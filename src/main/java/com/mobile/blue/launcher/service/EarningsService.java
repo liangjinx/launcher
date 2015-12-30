@@ -7,19 +7,19 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface EarningsService {
 
-	List<Map<String, Object>> selectInvestList(long userID,HttpServletRequest request,int nextpage);
+	List<Map<String, Object>> selectInvestList(long userID);
 
 	String selectInvestOne(long userId, long projectId);
 
 	int selectPigcount(long userId);
 
-	String selectMyPig(long userId,HttpServletRequest request,int nextpage);
+	String selectMyPig(long userId);
 
 	String sendFriendPig(long userId, long friendId, long earningsId, int number);
 
 	double selectEarnings(long userId);
 
-	List<Map<String, Object>> myearningslist(HttpServletRequest request, long userId, int nextPage);
+	List<Map<String, Object>> myearningslist(long userId);
 
 	Map<String, Object> selectIndex(long userId);
 

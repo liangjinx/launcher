@@ -29,8 +29,6 @@ import com.mobile.blue.util.constant.TypeConstant;
 
 @Service("friendService")
 public class FriendServiceImpl implements FriendService {
-	private AppFriendExample freindsExample = new AppFriendExample();
-	private Criteria criteria = freindsExample.createCriteria();
 	private List<AppFriend> list = null;
 	@Autowired
 	private FriendDao friendDao;
@@ -45,6 +43,8 @@ public class FriendServiceImpl implements FriendService {
 	 */
 	@Override
 	public String selectFriends(HttpServletRequest request,long userId) {
+		AppFriendExample freindsExample = new AppFriendExample();
+		Criteria criteria = freindsExample.createCriteria();
 		Map<String, Object> map = new HashMap<String, Object>();
 		String value = sysconfigService.queryByCode(SysConstant.NEW_FREINDS_FILTER_TIME);
 		if (value != null) {
@@ -72,6 +72,8 @@ public class FriendServiceImpl implements FriendService {
 	@Override
 	public String searchNewFriendS(HttpServletRequest request,long userId, String value,int nextpage) {
 		List<Long> searchFriend = new ArrayList<Long>();
+		AppFriendExample freindsExample = new AppFriendExample();
+		Criteria criteria = freindsExample.createCriteria();
 		// 先查询不是我好友的人，不包括给我发送消息了，我可以看到的人
 		List<Byte> listvalue = new ArrayList<Byte>();// 是我好友的人和已经给我发送了消息，但我没有处理消息的人
 		listvalue.add(CommConstant.ADD_FREINDS_1);
@@ -166,6 +168,8 @@ public class FriendServiceImpl implements FriendService {
 
 	@Override
 	public int selectFriendCount(long friendId, long userid) {
+		AppFriendExample freindsExample = new AppFriendExample();
+		Criteria criteria = freindsExample.createCriteria();
 		criteria.andFreindIdEqualTo(friendId);
 		criteria.andMyUserIdEqualTo(userid);
 		return friendDao.countByExample(freindsExample, criteria);
@@ -176,7 +180,8 @@ public class FriendServiceImpl implements FriendService {
 	@Override
 	public List<Map<String, Object>> newFriendRefresh(HttpServletRequest request, long userId, int nextPage) {
 		List<Long> friendListNew = new ArrayList<Long>();
-		
+		AppFriendExample freindsExample = new AppFriendExample();
+		Criteria criteria = freindsExample.createCriteria();
 		String value = sysconfigService.queryByCode(SysConstant.NEW_FREINDS_FILTER_TIME);
 		if (value != null) {
 			value = DateUtil.format(DateUtil.getBeforeDate(new Date(), Integer.parseInt(value)),
@@ -221,6 +226,8 @@ public class FriendServiceImpl implements FriendService {
 	@Override
 	public List<Map<String, Object>> lodFriendRefresh(HttpServletRequest request, long userId, int nextPage) {
 		List<Long> friendList = new ArrayList<Long>();
+		AppFriendExample freindsExample = new AppFriendExample();
+		Criteria criteria = freindsExample.createCriteria();
 		criteria.andMyUserIdEqualTo(userId);// 表示哪个人
 		criteria.andStatusEqualTo(CommConstant.ADD_FREINDS_1);// 表示已经同意的好友
 		list = friendDao.selectFriends(freindsExample, criteria);// 查询的是已经是我好友的人

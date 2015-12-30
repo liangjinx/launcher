@@ -54,28 +54,14 @@ public class EarningsServiceImpl implements EarningsService {
 	private BulletinService bulletinService;
 
 	@Override
-	public List<Map<String, Object>> selectInvestList(long userId,HttpServletRequest request,int nextpage) {
+	public List<Map<String, Object>> selectInvestList(long userId) {
 		AppMyEarningsExample example = new AppMyEarningsExample();
 		Criteria criteria = example.createCriteria();
 		List<Map<String, Object>> listInvest = new ArrayList<Map<String, Object>>();
-		PageParameter page=(PageParameter) request.getSession().getAttribute("selectInvestList");
-		if(page==null){
-			page = new PageParameter(0,BasicConstant.limit_page_size);
-			criteria.andUserIdEqualTo(userId);
-			int count=earningsDao.countByExample(example, criteria);
-			page.setCount(count);
-		}else{
-			if(nextpage>=page.getTotal()){
-				return null;
-			}
-			page.setCurrent(nextpage);
-		}
 		criteria.andUserIdEqualTo(userId);
-		example.setPage(page);
 		list = earningsDao.selectByExample(example, criteria);
 		Map<String, Object> map = null;
 		if(list!=null && list.size()>0){
-			request.getSession().setAttribute("selectInvestList", page);
 			for (AppMyEarnings earning : list) {
 				map = new HashMap<String, Object>();
 				Map<String, Object> orderMap = orderService.selectByUserIdAndProjectId(userId,
@@ -130,33 +116,17 @@ public class EarningsServiceImpl implements EarningsService {
 	}
 
 	@Override
-	public String selectMyPig(long userId,HttpServletRequest request,int nextPage) {
+	public String selectMyPig(long userId) {
 		AppMyEarningsExample example = new AppMyEarningsExample();
 		Criteria criteria = example.createCriteria();
-		PageParameter page=(PageParameter) request.getSession().getAttribute("selectMyPig");
-		if(page==null){
-			page = new PageParameter(0,BasicConstant.limit_page_size);
-			criteria.andUserIdEqualTo(userId);
-			criteria.andEndTimeGreaterThanOrEqualTo(DateUtil.getCurrentDate());
-			criteria.andDealStatusEqualTo(new Integer(0).byteValue());
-			int count=earningsDao.countByExample(example, criteria);
-			page.setCount(count);
-		}else{
-			if(nextPage>=page.getTotal()){
-				return null;
-			}
-			page.setCurrent(nextPage);
-		}
 		criteria.andUserIdEqualTo(userId);
 		criteria.andEndTimeGreaterThanOrEqualTo(DateUtil.getCurrentDate());
 		criteria.andDealStatusEqualTo(new Integer(0).byteValue());
-		example.setPage(page);
 		list = earningsDao.selectByExample(example, criteria);// 查询该用户的没有结束的收益状态
 		Map<String, Object> map = null; 
 		if (list.size() <= 0) {
 			return "";
 		}
-		request.getSession().setAttribute("selectMyPig", page);
 		List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
 		for (AppMyEarnings earning : list) {
 			map = new HashMap<String, Object>();
@@ -260,30 +230,17 @@ public class EarningsServiceImpl implements EarningsService {
 	}
 
 	@Override
-	public List<Map<String, Object>> myearningslist(HttpServletRequest request,long userId,int nextPage) {
+	public List<Map<String, Object>> myearningslist(long userId) {
 		AppMyEarningsExample example = new AppMyEarningsExample();
 		Criteria criteria = example.createCriteria();
 		String day = sysconfigService.queryByCode(SysConstant.GROW_UP_DAYS);
 		List<Map<String, Object>> returnlist = new ArrayList<Map<String, Object>>();
 		Map<String, Object> returnmap = null;
 		criteria.andUserIdEqualTo(userId);
-		PageParameter page=(PageParameter) request.getSession().getAttribute("myearningslist");
-		if(page==null){
-			page = new PageParameter(0,BasicConstant.limit_page_size);
-			int count=earningsDao.countByExample(example, criteria);
-			page.setCount(count);
-		}else{
-			if(nextPage>=page.getTotal()){
-				return null;
-			}
-			page.setCurrent(nextPage);
-		}
-		example.setPage(page);
 		list = earningsDao.selectByExample(example, criteria);
 		if (list == null || list.size() <= 0) {
 			return null;
 		}
-		request.getSession().setAttribute("myearningslist", page);
 		for (AppMyEarnings earnings : list) {
 			double d = DateUtil.daysBetween(DateUtil.getAfterDate(earnings.getBeginTime(), 1),
 					DateUtil.getCurrentDate());
@@ -337,6 +294,9 @@ public class EarningsServiceImpl implements EarningsService {
 			AppBulletin bulletin = li.get(0);
 			returnmap.put("bulletin", bulletin.getContent());
 			returnmap.put("title", bulletin.getTitle());
+		}else{
+			returnmap.put("bulletin","");
+			returnmap.put("title","");
 		}
 		return returnmap;
 	}

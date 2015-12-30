@@ -20,7 +20,6 @@ public class BulletinDaoImpl implements BulletinDao {
 	public List<AppBulletin> selectByExample(AppBulletinExample example, Criteria criteria) {
 		List<AppBulletin> list = appBulletinMapper.selectByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return list;
 	}
 

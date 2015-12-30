@@ -19,7 +19,6 @@ public class PreorderDaoImpl implements PreorderDao {
 	public int countByExample(AppPreorderExample example, Criteria criteria) {
 		int count = appPreorderMapper.countByExample(example);
 		criteria.getAllCriteria().clear();
-		example.clear();
 		return count;
 	}
 
