@@ -28,5 +28,4 @@ public interface WalletService {
 	String requestForYL(RequestOrderVo order) throws Exception;
 
 	String ylNotify(JSONObject jsonObject) throws Exception;
-
 }

@@ -85,11 +85,8 @@ public class ProjectServiceImpl implements ProjectService {
 			map.put("paincbuyProjectId", project.getPaincbuyProjectId());
 			map.put("leftNum", project.getLeftNum());
 			map.put("name", project.getName());
-<<<<<<< Updated upstream
-			returnlist.add(map);
-=======
 			map.put("preNum", preorderService.selectByUserIdAndProjectId(userId,project.getPaincbuyProjectId()));
->>>>>>> Stashed changes
+			returnlist.add(map);
 		}
 		return ResultUtil.getResultJson(returnlist, Status.success.getStatus(), Status.success.getMsg());
 	}

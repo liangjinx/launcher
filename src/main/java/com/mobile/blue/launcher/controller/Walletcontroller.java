@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.mobile.blue.launcher.service.BankCardService;
+import com.mobile.blue.launcher.service.WalletChangeLogService;
 import com.mobile.blue.launcher.service.WalletService;
 import com.mobile.blue.util.ResultUtil;
 import com.mobile.blue.util.constant.StatusConstant.Status;
@@ -25,6 +26,8 @@ public class Walletcontroller {
 	private BankCardService bankCardService;
 	@Autowired
 	private WalletService walletService;
+	@Autowired
+	private WalletChangeLogService walletChangeLogService;
 
 	private Logger log = Logger.getLogger(this.getClass());
 
@@ -72,10 +75,9 @@ public class Walletcontroller {
 	@RequestMapping(value = "/walletHistory", method = RequestMethod.GET, produces = {
 			"application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object walletHistory(HttpServletRequest request, ModelMap model, long userId, long cardId,
-			double money, String remark) throws Exception {
-//		return walletService.walletHistory(userId, cardId, money, remark);
-		return null;
+	public @ResponseBody Object walletHistory(HttpServletRequest request, ModelMap model, long walletId,
+			int nextPage) throws Exception {
+		return walletChangeLogService.selectWallatHistory(walletId,request,nextPage);
 	}
 
 	// —————钱包管理—————————————————————————————————/
@@ -94,7 +96,8 @@ public class Walletcontroller {
 	@Transactional
 	public @ResponseBody Object withdrawMoney(HttpServletRequest request, ModelMap model, long userId, long cardId,
 			double money, String remark) throws Exception {
-		return walletService.withdrawMoney(userId, cardId, money, remark);
+		return ResultUtil.getResultJson(walletService.withdrawMoney(userId, cardId, money, remark),
+				Status.success.getStatus(), Status.success.getMsg());
 	}
 
 }

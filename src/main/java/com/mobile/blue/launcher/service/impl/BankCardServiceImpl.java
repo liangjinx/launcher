@@ -105,7 +105,7 @@ public class BankCardServiceImpl implements BankCardService {
 		if (list == null || list.size() <= 0) {
 			return null;
 		}
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("card_id", list.get(0).getCardId());
 		map.put("card_no", list.get(0).getCardNo());
 		map.put("account_name", list.get(0).getAccountName());
