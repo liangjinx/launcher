@@ -439,7 +439,6 @@ public class WalletServiceImpl implements WalletService {
 	}
 
 	// 保存银联需要提交的信息
-	@SuppressWarnings("unchecked")
 	private Map<String, String> saveyinlian(RequestOrderVo order) throws Exception {
 		Map<String, String> contentData = new HashMap<String, String>();
 		contentData.put("version", "5.0.0");

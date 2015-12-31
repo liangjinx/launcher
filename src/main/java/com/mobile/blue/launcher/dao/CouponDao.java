@@ -14,4 +14,6 @@ public interface CouponDao {
 
 	int updateCoupon(AppCoupon coupon);
 
+	int insertCoupon(AppCoupon coupon);
+
 }

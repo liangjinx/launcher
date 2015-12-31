@@ -119,40 +119,44 @@ public class CouponServiceImpl implements CouponService {
 			criteria.andUserIdEqualTo(userId);
 			criteria.andCouponIdEqualTo(couponId);
 			list = couponDao.selectByExample(example, criteria);
-			if (list.size() <= 0) {
+			if (list==null || list.size() <= 0) {
 				return ResultUtil.getResultJson(Status.couponNotExist.getStatus(), Status.couponNotExist.getMsg());
-
 			}
 			// 修改卷的数量
 			if (list.get(0).getCanUseMoney().doubleValue() < money) {
 				return ResultUtil.getResultJson(Status.moneyNotEnough.getStatus(), Status.moneyNotEnough.getMsg());
 			}
 			// 修改我的卷值
-			AppCoupon coupon = new AppCoupon();
+			AppCoupon coupon = list.get(0);
 			coupon.setUserId(userId);
 			coupon.setCouponId(couponId);
 			coupon.setCanUseMoney(new BigDecimal(list.get(0).getCanUseMoney().doubleValue() - money));
-			couponDao.updateCoupon(coupon);
-			// 修改我的卷值，
+			if(couponDao.updateCoupon(coupon)<=0){
+				return ResultUtil.getResultJson(306, "修改我的卷值失败");
+			}
+			// 修改haoyou的卷值，
 			// 查询好友是否有该卷
 			criteria.andUserIdEqualTo(friendId);
 			criteria.andCouponIdEqualTo(couponId);
 			List<AppCoupon> friendcoupon = couponDao.selectByExample(example, criteria);
-			if (friendcoupon.size() < 0) {
+			int value=0;
+			if (friendcoupon==null || friendcoupon.size() <= 0) {
 				// 表示好友没有该卷
-				coupon = list.get(0);
-				coupon.setCouponId(null);
+				coupon.setMyCouponId(null);
 				coupon.setRelationType(new Integer(2).byteValue());
 				coupon.setUserId(friendId);
 				coupon.setStatus(new Integer(1).byteValue());
 				coupon.setCanUseMoney(new BigDecimal(money));
+				value=couponDao.insertCoupon(coupon);
+			}else{
+				//表示好友有该卷
+				coupon = friendcoupon.get(0);
+				coupon.setCanUseMoney(new BigDecimal(list.get(0).getCanUseMoney().doubleValue() + money));
+				value=couponDao.updateCoupon(coupon);
 			}
-			coupon = new AppCoupon();
-			coupon.setUserId(friendId);
-			coupon.setCouponId(couponId);
-			coupon.setCanUseMoney(new BigDecimal(friendcoupon.get(0).getCanUseMoney().doubleValue() + money));
-			couponDao.updateCoupon(coupon);
-
+			if(value<=0){
+				return ResultUtil.getResultJson(306, "修改好友卷值失败");
+			}
 			// 发送消息给朋友
 		}
 		return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());

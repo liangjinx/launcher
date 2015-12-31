@@ -1,5 +1,7 @@
 package com.mobile.blue.launcher.dao;
 
+import java.util.List;
+
 import com.mobile.blue.launcher.model.AppUserExt;
 import com.mobile.blue.launcher.model.Example.AppUserExtExample;
 import com.mobile.blue.launcher.model.Example.AppUserExtExample.Criteria;
@@ -10,6 +12,8 @@ public interface UserExtDao {
 
 	int updateUserExt(long userId, byte type, int number);
 
-	int selectUserExt(AppUserExtExample example, Criteria criteria);
+	int selectUserExtCount(AppUserExtExample example, Criteria criteria);
+
+	List<AppUserExt> selectByExample(AppUserExtExample example, Criteria criteria);
 
 }

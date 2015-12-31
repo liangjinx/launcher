@@ -200,11 +200,10 @@ public class FriendServiceImpl implements FriendService {
 		for (AppFriend friend : list) {
 			friendListNew.add(friend.getFreindId());
 		}
-		List<Map<String, Object>> returnnewfriend=null;
+		List<Map<String, Object>> returnnewfriend=new ArrayList<Map<String, Object>>();
 		List<AppUser> NewfriendList=userBasicService.selectById(request,friendListNew,nextPage,false);
 		Map<String, Object> newfriendMap=null;
 		if(NewfriendList!=null && NewfriendList.size()>0){
-			returnnewfriend=new ArrayList<Map<String, Object>>();
 			for(AppUser user:NewfriendList){
 				newfriendMap=new HashMap<String, Object>();
 				newfriendMap.put("userId", user.getUserId());

@@ -32,11 +32,11 @@ public class UserExtServiceImpl implements UserExtService {
 	}
 
 	@Override
-	public int selectUserExt(long userId) {
+	public int selectUserExtCount(long userId) {
 		AppUserExtExample example = new AppUserExtExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUserIdEqualTo(userId);
-		return userExtDao.selectUserExt(example, criteria);
+		return userExtDao.selectUserExtCount(example, criteria);
 	}
 
 	@Override
@@ -47,6 +47,14 @@ public class UserExtServiceImpl implements UserExtService {
 		userext.setSettingType(type);
 		userext.setSettingValue(number);
 		return userExtDao.insertUserExt(userext);
+	}
+
+	@Override
+	public List<AppUserExt> selectUserExt(long userId) {
+		AppUserExtExample example = new AppUserExtExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUserIdEqualTo(userId);
+		return userExtDao.selectByExample(example,criteria);
 	}
 
 }

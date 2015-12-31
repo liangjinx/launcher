@@ -30,6 +30,9 @@ public class PreorderServiceImpl implements PreorderService {
 	@Override
 	public String saveUserPreSet(long userId, long projectId, byte type, boolean isCancel, int number) {
 		boolean isupdate = false;
+		AppPreorderExample example = new AppPreorderExample();
+		Criteria criteria = example.createCriteria();
+		int value = 0;
 		if (type == TypeConstant.USER_SETTING_TYPE_2) {
 			// 分期抢购
 			if (!isCancel) {
@@ -38,12 +41,9 @@ public class PreorderServiceImpl implements PreorderService {
 					return ResultUtil.getResultJson(Status.saleNumNotEnough.getStatus(),
 							Status.saleNumNotEnough.getMsg());
 				}
-				AppPreorderExample example = new AppPreorderExample();
-				Criteria criteria = example.createCriteria();
 				criteria.andUserIdEqualTo(userId);
 				criteria.andProjectIdEqualTo(projectId);
 				int flag = preorderDao.countByExample(example, criteria);
-				int value = 0;
 				if (flag == 1) {
 					// 表示已经保存过该预抢的项目，则更新该预抢的项目
 					value = preorderDao.updatePreOrder(userId, projectId, number);
@@ -51,20 +51,17 @@ public class PreorderServiceImpl implements PreorderService {
 					// 表示以前没有预抢过该项目，则插入数据到数据库
 					value = preorderDao.insertPreorder(userId, projectId, number);
 				}
-				if (value >= 1) {
-					//表示保存用户预强成功
-					int count = userExtService.selectUserExt(userId);
-					if (count != 1) {
-						userExtService.insertUserExt(userId, projectId, number, type);
-						isupdate = true;
-					} else {
-						if (userExtService.updateUserExt(userId, type, 0) >= 1)
-							isupdate = true;
+			}else{
+				//表示关闭分期抢购，并且不选择全部都抢
+				criteria.andUserIdEqualTo(userId);
+				List<AppPreorder> list=preorderDao.selectByexample(example, criteria);
+				for(AppPreorder preorder:list){
+					value=preorderDao.deleteUserPreorder(userId, preorder.getProjectId());
+					if(value!=1){
+						break;
 					}
 				}
-			} else {
-				if (preorderDao.deleteUserPreorder(userId, projectId) >= 1)
-					isupdate = true;
+				isupdate=true;
 			}
 		} else if (type == TypeConstant.USER_SETTING_TYPE_1) {
 			// 表示每期都抢
@@ -75,23 +72,32 @@ public class PreorderServiceImpl implements PreorderService {
 				// 保存最近可以抢购的项目
 				List<Map<String, Object>> projectlist = projectServicer.selectCanPreProject();
 				if (projectlist == null || projectlist.size() <= 0) {
-
+					
 				} else {
+					example = new AppPreorderExample();
+					criteria = example.createCriteria();
 					for (Map<String, Object> map : projectlist) {
-						preorderDao.insertPreorder(userId, Long.parseLong(map.get("paincbuy_project_id").toString()),
-								number);
+						criteria.andUserIdEqualTo(userId);
+						long project_id=Long.parseLong(map.get("paincbuy_project_id").toString());
+						criteria.andProjectIdEqualTo(project_id);
+						List<AppPreorder> returnlist=preorderDao.selectByexample(example, criteria);
+						if(returnlist==null || returnlist.size()<=0){
+							//修改用户对预抢项目的设置
+							preorderDao.insertPreorder(userId, project_id,number);
+						}else{
+							preorderDao.updatePreOrder(userId, projectId, number);
+						}
 					}
 				}
 			}
-			int count = userExtService.selectUserExt(userId);
-			if (count != 1) {
-				userExtService.insertUserExt(userId, projectId, number, type);
+		}
+		int count = userExtService.selectUserExtCount(userId);
+		if (count != 1) {
+			userExtService.insertUserExt(userId, projectId, number, type);
+			isupdate = true;
+		} else {
+			if (userExtService.updateUserExt(userId, type, number) >= 1)
 				isupdate = true;
-			} else {
-				if (userExtService.updateUserExt(userId, type, number) >= 1)
-					isupdate = true;
-			}
-
 		}
 		if (isupdate)
 			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());

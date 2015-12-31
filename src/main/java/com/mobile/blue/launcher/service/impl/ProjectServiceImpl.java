@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 
 import com.mobile.blue.launcher.dao.ProjectDao;
 import com.mobile.blue.launcher.model.AppProject;
+import com.mobile.blue.launcher.model.AppUserExt;
 import com.mobile.blue.launcher.model.Example.AppProjectExample;
 import com.mobile.blue.launcher.model.Example.AppProjectExample.Criteria;
 import com.mobile.blue.launcher.service.PreorderService;
 import com.mobile.blue.launcher.service.ProjectService;
+import com.mobile.blue.launcher.service.UserExtService;
 import com.mobile.blue.util.DateUtil;
 import com.mobile.blue.util.ResultUtil;
 import com.mobile.blue.util.constant.StatusConstant.Status;
@@ -25,6 +27,8 @@ public class ProjectServiceImpl implements ProjectService {
 	private ProjectDao projectDao;
 	@Autowired
 	private PreorderService preorderService;
+	@Autowired
+	private UserExtService userExtService;
 	@Override
 	public Map<String, Object> selectById(Long paincbuyProjectId) {
 		AppProjectExample example = new AppProjectExample();
@@ -76,6 +80,7 @@ public class ProjectServiceImpl implements ProjectService {
 	public String searchProjects(long userId) {
 		AppProjectExample example = new AppProjectExample();
 		Criteria criteria = example.createCriteria();
+		Map<String, Object> returnmap=new HashMap<String, Object>();
 		List<Map<String, Object>> returnlist = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map = null;
 		criteria.andEndTimeGreaterThanOrEqualTo(DateUtil.getCurrentDate());
@@ -88,7 +93,16 @@ public class ProjectServiceImpl implements ProjectService {
 			map.put("preNum", preorderService.selectByUserIdAndProjectId(userId,project.getPaincbuyProjectId()));
 			returnlist.add(map);
 		}
-		return ResultUtil.getResultJson(returnlist, Status.success.getStatus(), Status.success.getMsg());
+		List<AppUserExt> listext=userExtService.selectUserExt(userId);
+		if(listext==null || list.size()<=0){
+			returnmap.put("type", 0);
+			returnmap.put("num", 0);
+		}else{
+			returnmap.put("type", listext.get(0).getSettingType());
+			returnmap.put("num", listext.get(0).getSettingValue());
+		}
+		returnmap.put("projectList", returnlist);
+		return ResultUtil.getResultJson(returnmap, Status.success.getStatus(), Status.success.getMsg());
 	}
 
 	@Override

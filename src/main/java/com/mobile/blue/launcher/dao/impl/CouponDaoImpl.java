@@ -35,4 +35,9 @@ public class CouponDaoImpl implements CouponDao {
 		int count = appCouponMapper.updateByPrimaryKeySelective(coupon);
 		return count;
 	}
+
+	@Override
+	public int insertCoupon(AppCoupon coupon) {
+		return appCouponMapper.insertSelective(coupon);
+	}
 }

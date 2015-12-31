@@ -246,7 +246,8 @@ public class EarningsServiceImpl implements EarningsService {
 				moneys = moneys + earnings.getExpectEarning().doubleValue() * d / Integer.parseInt(day);
 			}
 		}
-		return moneys;
+		 BigDecimal b3 = new BigDecimal(moneys);
+		return b3.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 
 	@Override

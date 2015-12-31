@@ -1,5 +1,7 @@
 package com.mobile.blue.launcher.dao.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,10 +37,17 @@ public class UserExtDaoImpl implements UserExtDao {
 	}
 
 	@Override
-	public int selectUserExt(AppUserExtExample example, Criteria criteria) {
+	public int selectUserExtCount(AppUserExtExample example, Criteria criteria) {
 		int count = appUserExtMapper.countByExample(example);
 		criteria.getAllCriteria().clear();
 		return count;
+	}
+
+	@Override
+	public List<AppUserExt> selectByExample(AppUserExtExample example, Criteria criteria) {
+		List<AppUserExt> list=appUserExtMapper.selectByExample(example);
+		criteria.getAllCriteria().clear();
+		return list;
 	}
 
 }
