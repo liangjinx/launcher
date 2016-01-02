@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.mobile.blue.launcher.service.BankCardService;
 import com.mobile.blue.launcher.service.DictService;
+import com.mobile.blue.launcher.service.EarningsService;
+import com.mobile.blue.launcher.service.OrderService;
 import com.mobile.blue.launcher.service.SysconfigService;
 import com.mobile.blue.launcher.service.UserAddressService;
 import com.mobile.blue.util.ResultUtil;
@@ -28,6 +30,11 @@ public class PublicController {
 	private UserAddressService userAddressService;
 	@Autowired
 	private BankCardService bankCardService;
+	@Autowired
+	private EarningsService earningsService;
+	@Autowired
+	private OrderService orderService;
+
 	/**
 	 * 回报方式查询，卷，猪
 	 * 
@@ -84,6 +91,38 @@ public class PublicController {
 				Status.success.getMsg());
 	}
 
+	// 修改回报方式
+	@RequestMapping(value = "/updateReturnWay", method = RequestMethod.GET, produces = {
+			"application/json;charset=UTF-8" })
+	@Transactional
+	public @ResponseBody Object updateReturnWay(HttpServletRequest request, ModelMap model, byte beforeDealType,
+			byte dealType, long earningId) throws Exception {
+		if (earningsService.updateReturnWay(beforeDealType, dealType, earningId) >= 1) {
+			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
+		}
+		return ResultUtil.getResultJson(Status.saveFail.getStatus(), Status.saveFail.getMsg());
+	}
+
+	/**
+	 * 订单额外费用 保存
+	 */
+	/**fengeWayId 表示分割方式的id号码，（精，粗分割方式）
+	 * 分割方式id， fentiwayId(几分体，在精细分割的时候必须选择，在粗分割的时候不需要)
+	 * guige （在选择粗分割的时候必须选择，在精细分割的时候不需要，）
+	 */
+	@RequestMapping(value = "/orderExt", method = RequestMethod.GET, produces = {
+			"application/json;charset=UTF-8" })
+	@Transactional
+	public @ResponseBody Object orderExt(HttpServletRequest request, ModelMap model,long fengeWayId,long  fentiwayId
+			,String guige,int num,long userId,long relationId) throws Exception {
+		if((fengeWayId==18 && fentiwayId!=0) || (fengeWayId==19 && guige!=null && !"".equals(guige))){
+			return orderService.addOrderByPeiSong(fengeWayId,fentiwayId,guige,num,userId,relationId);
+		}
+		else{
+			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
+		}
+		
+	}
 
 	/**
 	 * 费用清单
@@ -100,6 +139,7 @@ public class PublicController {
 		return ResultUtil.getResultJson(sysconfigService.expensesList(), Status.success.getStatus(),
 				Status.success.getMsg());
 	}
+
 	/**
 	 * 查询城市列表
 	 * 
@@ -115,7 +155,6 @@ public class PublicController {
 	public @ResponseBody Object provinceList(HttpServletRequest request, ModelMap model) throws Exception {
 		return userAddressService.selectProvinceList();
 	}
-
 
 	/**
 	 * 查询省份下对应的城市列表
@@ -133,7 +172,6 @@ public class PublicController {
 			throws Exception {
 		return userAddressService.selectCityInProvince(provinceCode);
 	}
-	
 
 	@RequestMapping(value = "/verifyBankcard", method = RequestMethod.GET, produces = {
 			"application/json;charset=UTF-8" })

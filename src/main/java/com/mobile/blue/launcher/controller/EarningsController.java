@@ -143,19 +143,6 @@ public class EarningsController {
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 		return earningsService.sendFriendPig(userId, friendId, touzhiId, number);
 	}
-
-	// 修改回报方式
-	@RequestMapping(value = "/updateReturnWay", method = RequestMethod.GET, produces = {
-			"application/json;charset=UTF-8" })
-	@Transactional
-	public @ResponseBody Object updateReturnWay(HttpServletRequest request, ModelMap model, byte beforeDealType,
-			byte dealType, long earningId) throws Exception {
-		if (earningsService.updateReturnWay(beforeDealType, dealType, earningId) >= 1) {
-			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
-		}
-		return ResultUtil.getResultJson(Status.saveFail.getStatus(), Status.saveFail.getMsg());
-	}
-
 	// .........................................................................................................
 	// 收益列表
 	@RequestMapping(value = "/myearningslist", method = RequestMethod.GET, produces = {

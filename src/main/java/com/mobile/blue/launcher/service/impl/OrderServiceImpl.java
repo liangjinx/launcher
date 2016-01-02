@@ -19,7 +19,10 @@ import com.mobile.blue.launcher.model.Example.AppOrderExample;
 import com.mobile.blue.launcher.model.Example.AppOrderExample.Criteria;
 import com.mobile.blue.launcher.service.MessageService;
 import com.mobile.blue.launcher.service.OrderAddressService;
+import com.mobile.blue.launcher.service.OrderExtFeeService;
 import com.mobile.blue.launcher.service.OrderService;
+import com.mobile.blue.launcher.service.ProjectService;
+import com.mobile.blue.launcher.service.SysconfigService;
 import com.mobile.blue.launcher.service.UserBasicService;
 import com.mobile.blue.util.DateUtil;
 import com.mobile.blue.util.PageParameter;
@@ -27,6 +30,7 @@ import com.mobile.blue.util.ResultUtil;
 import com.mobile.blue.util.constant.BasicConstant;
 import com.mobile.blue.util.constant.OrderConstant;
 import com.mobile.blue.util.constant.StatusConstant.Status;
+import com.mobile.blue.util.constant.SysConstant;
 import com.mobile.blue.util.util.RandomUtils;
 import com.mobile.blue.view.OrderRankingVo;
 import com.mobile.blue.view.RequestOrderVo;
@@ -43,7 +47,14 @@ public class OrderServiceImpl implements OrderService {
 	private MessageService messageService;
 	@Autowired
 	private UserBasicService userBasicService;
-
+	@Autowired
+	private SysconfigService sysconfigService;
+	@Autowired
+	private OrderExtFeeService orderExtFeeService;
+	@Autowired
+	@Autowired
+	private ProjectService projectService;
+//	private orderse
 	@Override
 	public Map<String, Object> selectByUserIdAndProjectId(long userId, long projectId) {
 		AppOrderExample example = new AppOrderExample();
@@ -374,5 +385,42 @@ public class OrderServiceImpl implements OrderService {
 			}
 		}
 		return returnlist;
+	}
+
+	@Override
+	public String addOrderByPeiSong(long fengeWayId, long fentiwayId, String guige,int num,long userId,long relationId) {
+		if(fengeWayId==18 && fentiwayId!=0){
+			//表示粗分割
+			String feiyong=sysconfigService.queryByCode(SysConstant.DIVISION_THICK_FEE);
+			Map<String, Object> map = projectService.selectById(relationId);
+			//生成订单
+			AppOrder order=new AppOrder();
+			order.setOrderCode(DateUtil.format(DateUtil.getCurrentDate(), "yyMMddmmss") + RandomUtils.getNum(6));
+			order.setCtime(DateUtil.getCurrentDate());
+			order.setType(Byte.parseByte("2"));
+			order.setStatus(Byte.parseByte("1"));
+			order.setNum(Short.parseShort(num+""));
+			order.setPrice(price);
+			order.setTotalMoney(totalMoney);
+			order.setPayTime(null);
+			order.setUserId(userId);
+			order.setRemark(null);
+			order.setProductName(productName);
+			order.setPayType(null);
+			order.setRelationId(relationId);
+			order.setRelationName(relationName);
+			order.setOverTime(null);
+			order.setProductImg(productImg);
+			order.setSubOrderId(null);
+			order.setConfirmTime(null);
+			order.setPrepayOrderCode(prepayOrderCode);
+			order.setIsShow(Byte.parseByte("1"));
+			int saveflag=orderDao.insertOrder(order);
+			//添加订单扩展信息
+			saveflag=orderExtFeeService.addOrderExtFee();
+		}else if(fengeWayId==19 && guige!=null && !"".equals(guige)){
+			//表示细分割	
+		}
+		return null;
 	}
 }
