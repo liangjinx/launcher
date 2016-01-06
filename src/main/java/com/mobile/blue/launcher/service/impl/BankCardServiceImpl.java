@@ -56,8 +56,9 @@ public class BankCardServiceImpl implements BankCardService {
 		}
 		request.getSession().setAttribute("bankCardList", page);
 		List<RequestBankCardVo> returnlist = new ArrayList<RequestBankCardVo>();
+		RequestBankCardVo bankVo=null;
 		for (AppUserBankCard bankcard : list) {
-			RequestBankCardVo bankVo = new RequestBankCardVo();
+			bankVo = new RequestBankCardVo();
 			bankVo.setAccountName(bankcard.getAccountName());
 			bankVo.setBank(bankcard.getBank());
 			bankVo.setBankCode(bankcard.getBankCode());

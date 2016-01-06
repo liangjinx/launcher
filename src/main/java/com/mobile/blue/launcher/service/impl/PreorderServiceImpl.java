@@ -109,7 +109,7 @@ public class PreorderServiceImpl implements PreorderService {
 	public int selectByUserIdAndProjectId(long userId, Long paincbuyProjectId) {
 		AppPreorderExample example = new AppPreorderExample();
 		Criteria criteria = example.createCriteria();
-		List<AppPreorder> list = new ArrayList<>();
+		List<AppPreorder> list = new ArrayList<AppPreorder>();
 		criteria.andUserIdEqualTo(userId);
 		criteria.andProjectIdEqualTo(paincbuyProjectId);
 		list=preorderDao.selectByexample(example,criteria);

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.mobile.blue.launcher.dao.OrderDao;
 import com.mobile.blue.launcher.model.AppOrder;
+import com.mobile.blue.launcher.model.AppOrderExtFee;
 import com.mobile.blue.launcher.model.AppUser;
 import com.mobile.blue.launcher.model.AppUserAddress;
 import com.mobile.blue.launcher.model.Example.AppOrderExample;
@@ -25,6 +26,7 @@ import com.mobile.blue.launcher.service.MessageService;
 import com.mobile.blue.launcher.service.OrderAddressService;
 import com.mobile.blue.launcher.service.OrderExtFeeService;
 import com.mobile.blue.launcher.service.OrderService;
+import com.mobile.blue.launcher.service.ProjectService;
 import com.mobile.blue.launcher.service.SysconfigService;
 import com.mobile.blue.launcher.service.UserAddressService;
 import com.mobile.blue.launcher.service.UserBasicService;
@@ -61,6 +63,8 @@ public class OrderServiceImpl implements OrderService {
 	private AreaService areaServicel;
 	@Autowired
 	private OrderExtFeeService orderExtFeeService;
+	@Autowired
+	private ProjectService projectService;
 
 	@Override
 	public Map<String, Object> selectByUserIdAndProjectId(long userId, long projectId) {
@@ -166,49 +170,56 @@ public class OrderServiceImpl implements OrderService {
 	public Object addOrder(RequestOrderVo orders) throws Exception {
 		AppOrderExample example = new AppOrderExample();
 		Criteria criteria = example.createCriteria();
-		criteria.andUserIdEqualTo(orders.getUserId());
-		criteria.andRelationIdEqualTo(orders.getRelationId());
-		list=orderDao.selectByExample(example, criteria);
-		//以上表示老订单
+		// 以上表示老订单
+		Map<String, Object> map = projectService.selectById(orders.getRelationId());
+		if(map==null || map.size()<0){
+			return null;
+		}
 		if (orders.getUserId() == 0) {
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 		}
 		AppOrder order = getOrder(orders, 2);
 		if (orderDao.insertOrder(order) > 0) {
 			if (orders.getType() == 2) {
-				//表示屠宰配送
-				/**1，修改订单表,增加子订单
-				 * 2，修改订单费用扩展表
-				 * 3，增加订单收获地址
+				// 表示屠宰配送
+				/**
+				 * 1，修改订单表,增加子订单 2，修改订单费用扩展表 3，增加订单收获地址
 				 */
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				criteria.andOrderCodeEqualTo(order.getOrderCode());
-				List<AppOrder> li=orderDao.selectByExample(example, criteria);
-				order.setSubOrderId(li.get(0).getOrderId());
-				orderDao.updateOrder(order);
-				
-//				AppOrderExtFee orderextfee=orderExtFeeService.selectByorderId(list.get(0).getOrderId());
-//				orderextfee.setOrderId(li.get(0).getOrderId());
-//				orderExtFeeService.updateOrderExtfee(orderextfee);
-				
+				List<AppOrder> li = orderDao.selectByExample(example, criteria);
+				if(li!=null && li.size()>0){
+					order.setSubOrderId(li.get(0).getOrderId());
+					orderDao.updateOrder(order);
+				}
+				// AppOrderExtFee
+				// orderextfee=orderExtFeeService.selectByorderId(list.get(0).getOrderId());
+				// orderextfee.setOrderId(li.get(0).getOrderId());
+				// orderExtFeeService.updateOrderExtfee(orderextfee);
+
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
-				list=orderDao.selectByExample(example, criteria);
+				list = orderDao.selectByExample(example, criteria);
 				AppUserAddress adr = userAddressService.selectUserAddressById(orders.getAddressId());
 				adr.setUserId(orders.getUserId());
-				if (orderAddressService.insertAddress(list.get(0).getOrderId(),adr, orders.getRemark()) > 0) {
-					logger.info("insert order address success buy type 2");
+				if(list!=null && list.size()>0){
+					if (orderAddressService.insertAddress(list.get(0).getOrderId(), adr, orders.getRemark()) > 0) {
+						logger.info("insert order address success buy type 2");
+					}
 				}
+				
 			}
 			if (orders.getType() == 3) {
 				// 表示领取活猪
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
-				list=orderDao.selectByExample(example, criteria);
-				AppUserAddress address = userAddressService.selectUserAddressById(orders.getAddressId());
-				if (orderAddressService.insertAddress(list.get(0).getOrderId(),address, orders.getRemark()) > 0) {
-					logger.info("insert order address success  buy type 3");
+				list = orderDao.selectByExample(example, criteria);
+				if(list!=null && list.size()>0){
+					AppUserAddress address = userAddressService.selectUserAddressById(orders.getAddressId());
+					if (orderAddressService.insertAddress(list.get(0).getOrderId(), address, orders.getRemark()) > 0) {
+						logger.info("insert order address success  buy type 3");
+					}
 				}
 			}
 			// 发送消息,生成订单成功
@@ -243,11 +254,18 @@ public class OrderServiceImpl implements OrderService {
 			Map<String, Object> returnmap = new HashMap<String, Object>();
 			returnmap.put("ctime", order.getCtime() == null ? null : order.getCtime().getTime());
 			returnmap.put("orderCode", order.getOrderCode());
+			
+			returnmap.put("projectName", map.get("name"));
+			returnmap.put("projectId", map.get("paincbuy_project_id"));
+			returnmap.put("imgs", map.get("imgs"));
+			returnmap.put("num", map.get("num"));
+			returnmap.put("price", map.get("price"));
+			returnmap.put("total_money", map.get("total_money"));
 			return returnmap;
-		}else{
-			//删除订单扩展表的信息
-			if(list!=null && list.size()>0){
-				orderExtFeeService.deleteByorderId(list.get(0).getOrderId()+"");
+		} else {
+			// 删除订单扩展表的信息
+			if (list != null && list.size() > 0) {
+				orderExtFeeService.deleteByorderId(list.get(0).getOrderId() + "");
 			}
 		}
 		return null;
@@ -258,6 +276,13 @@ public class OrderServiceImpl implements OrderService {
 		AppOrderExample example = new AppOrderExample();
 		Criteria criteria = example.createCriteria();
 		if (orderDao.updateOrder(getOrder(order, 1)) >= 1) {
+			if (order.getType() == 2 || order.getType() == 3) {
+				// 表示屠宰配送
+				Map<String, Object> orderMap = earningsService.selectInvestOne(order.getUserId(), order.getRelationId());
+				earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()), 
+						Byte.parseByte("0"),
+						Long.parseLong(orderMap.get("earningsId").toString()), order.getUserId());
+			}
 			AppOrder aa = orderDao.selectByExample(example, criteria).get(0);
 			String ss = "";
 			switch (order.getStatus()) {
@@ -391,10 +416,16 @@ public class OrderServiceImpl implements OrderService {
 			long relationId) {
 		AppUserAddress useraddr = userAddressService.selectUserDefault(userId);
 		Map<String, Object> datamap = getFeiyong(fengeWayId, fentiwayId, guige, userId, relationId);
-		String addrString = areaServicel.selectValueByid(useraddr.getProvince())
-				+ areaServicel.selectValueByid(useraddr.getCity());
+		String addrString ="";
+		if(useraddr.getProvince()!=null){
+			addrString =areaServicel.selectValueByid(useraddr.getProvince());
+		}else if(useraddr.getCity()!=null){
+			addrString =areaServicel.selectValueByid(useraddr.getCity());
+		}
 		datamap.put("address", addrString + useraddr.getAddress());
 		datamap.put("addressId", useraddr.getAddressId());
+		datamap.put("contactMan", useraddr.getContactMan());
+		datamap.put("phone", useraddr.getContactPhone());
 		// 增加订单额外费用
 		int fengti = 1;
 		if (fengeWayId == 18) {
@@ -412,14 +443,32 @@ public class OrderServiceImpl implements OrderService {
 		Criteria criteria = example.createCriteria();
 		criteria.andUserIdEqualTo(userId);
 		criteria.andRelationIdEqualTo(relationId);
-		list=orderDao.selectByExample(example, criteria);
-		orderExtFeeService.addOrderExtFee(list.get(0).getOrderId(),new BigDecimal(datamap.get("totalMoney").toString()),
-				Integer.parseInt(datamap.get("num").toString()),
-				new BigDecimal(datamap.get("singleSendMoney").toString()),
-				new BigDecimal(datamap.get("singleDivisionMoney").toString()), fengeWayId == 18 ? 1 : 2, fengti,
-				new BigDecimal(datamap.get("singlePackageMoney").toString()), guige,
-				Integer.parseInt(datamap.get("weight").toString()),
-				Integer.parseInt(datamap.get("packageNum").toString()));
+		list = orderDao.selectByExample(example, criteria);
+		AppOrderExtFee extfee=orderExtFeeService.selectByorderId(list.get(0).getOrderId());
+		if(extfee==null){
+			orderExtFeeService.addOrderExtFee(list.get(0).getOrderId(),
+					new BigDecimal(datamap.get("totalMoney").toString()), Integer.parseInt(datamap.get("num").toString()),
+					new BigDecimal(datamap.get("singleSendMoney").toString()),
+					new BigDecimal(datamap.get("singleDivisionMoney").toString()), fengeWayId == 18 ? 1 : 2, fengti,
+					new BigDecimal(datamap.get("singlePackageMoney").toString()), guige,
+					Integer.parseInt(datamap.get("weight").toString()),
+					Integer.parseInt(datamap.get("packageNum").toString()));
+		}
+		else{
+			extfee=new AppOrderExtFee();
+			extfee.setOrderId(list.get(0).getOrderId());
+			extfee.setPayMoney(new BigDecimal(datamap.get("totalMoney").toString()));
+			extfee.setNum(Integer.parseInt(datamap.get("num").toString()));
+			extfee.setSlaughterFee(new BigDecimal(datamap.get("singleSendMoney").toString()));
+			extfee.setDivisionFee(new BigDecimal(datamap.get("singleDivisionMoney").toString()));
+			extfee.setDivisionType(Byte.parseByte((fengeWayId == 18 ? 1 : 2)+""));
+			extfee.setDivisionMode(Byte.parseByte(fengti+""));
+			extfee.setPackageFee(new BigDecimal(datamap.get("singlePackageMoney").toString()));
+			extfee.setSpec(guige);
+			extfee.setWeight(new BigDecimal(datamap.get("weight").toString()));
+			extfee.setPackageNum(Integer.parseInt(datamap.get("packageNum").toString()));
+			orderExtFeeService.updateOrderExtfee(extfee);
+		}
 		return datamap;
 	}
 

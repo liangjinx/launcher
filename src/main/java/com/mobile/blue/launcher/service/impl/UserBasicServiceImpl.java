@@ -434,8 +434,8 @@ public class UserBasicServiceImpl implements UserBasicService {
 
 		String fileAccessPath = "/" + DateUtil.getCurrentDateStr(BasicConstant.DATE_PATH_FILE) + "//headImgFile/";
 		String uploadPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_UPLOAD_ROOT_PATH) + fileAccessPath;
-		String fileac=fileAccessPath="http://192.168.1.143:8181"+fileAccessPath;
-		fileAccessPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_ACCESS_URL) + fileAccessPath;
+//		fileAccessPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_ACCESS_URL) + fileAccessPath;
+		fileAccessPath="http://120.25.102.41:8181/resources/"+fileAccessPath;
 		String newFileName = System.currentTimeMillis() + "." + fileTypes;
 		logger.info("uploadPath:"+uploadPath+",newFileName:"+newFileName);
 		logger.info("fileAccessPath:"+fileAccessPath+",newFileName:"+newFileName);
@@ -450,11 +450,12 @@ public class UserBasicServiceImpl implements UserBasicService {
 			localFile.mkdirs();
 		}
 		file.transferTo(localFile);
-		
-		 user.setHeadImg(fileac + newFileName);
-		// /opt/APP_tomcat/webapps/launcher/WEB-INF
+		 user.setHeadImg(fileAccessPath + newFileName);
+		 Map<String, Object> returnmap=new HashMap<String, Object>();
+		 returnmap.put("url", user.getHeadImg());
+		 returnmap.put("userId", user.getUserId());
 		if (userDao.updateUserByUserIdOrPhone(user) >= 1)
-			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
+			return ResultUtil.getResultJson(returnmap,Status.success.getStatus(), Status.success.getMsg());
 		return ResultUtil.getResultJson(Status.headimgNullity.getStatus(), Status.headimgNullity.getMsg());
 	}
 

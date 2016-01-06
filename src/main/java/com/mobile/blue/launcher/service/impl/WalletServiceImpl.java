@@ -371,9 +371,9 @@ public class WalletServiceImpl implements WalletService {
 	 * @throws Exception
 	 */
 	public String requestForYL(String orderCode) throws Exception {
-		Map<String, String> json = new HashMap<>();
+		Map<String, String> json = new HashMap<String, String>();
 		json = SDKUtil.submitUrl(saveyinlian(orderCode), SDKConfig.getConfig().getAppRequestUrl(), SDKUtil.encoding_UTF8);
-		Map<String, Object> returnmap = new HashMap<>();
+		Map<String, Object> returnmap = new HashMap<String, Object>();
 		returnmap.put("encoding", json.get("encoding"));
 		returnmap.put("certId", json.get("certId"));
 		returnmap.put("signMethod", json.get("signMethod"));
@@ -400,7 +400,7 @@ public class WalletServiceImpl implements WalletService {
 			return ResultUtil.getResultJson(Status.serverError.getStatus(), Status.serverError.getMsg());
 		}
 		if ("000000".equals(jsonObject.getString("respCode"))) {
-			Map<String, Object> map = new HashMap<>();
+			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("txnType", jsonObject.getString("txnType"));
 			map.put("bizType", jsonObject.getString("bizType"));
 			map.put("accessType", jsonObject.getString("accessType"));

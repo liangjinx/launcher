@@ -92,7 +92,7 @@ public class MessageServiceImpl implements MessageService {
 			List<AppBulletin> bulletList=bulletinService.selectbullet();
 			List<Map<String, Object>> returnlistbullet=new ArrayList<Map<String, Object>>();
 			Map<String, Object> returnmap=null;
-			if(list!=null && list.size()>0){
+			if(bulletList!=null && bulletList.size()>0){
 				returnmap=new HashMap<String, Object>();
 				for(AppBulletin bullet:bulletList){
 					returnmap=new HashMap<String, Object>();

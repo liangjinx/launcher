@@ -132,6 +132,7 @@ public class EarningsServiceImpl implements EarningsService {
 		map.put("orderId", orderMap.get("order_id"));
 		map.put("dealStatus", list.get(0).getDealStatus());
 		map.put("presentNum", list.get(0).getPresentNum());
+		map.put("dealType", list.get(0).getDealType());
 		return map;
 	}
 
@@ -263,6 +264,7 @@ public class EarningsServiceImpl implements EarningsService {
 		List<Map<String, Object>> returnlist = new ArrayList<Map<String, Object>>();
 		Map<String, Object> returnmap = null;
 		criteria.andUserIdEqualTo(userId);
+		criteria.andDealStatusEqualTo(Byte.parseByte("0"));
 		list = earningsDao.selectByExample(example, criteria);
 		if (list == null || list.size() <= 0) {
 			return null;

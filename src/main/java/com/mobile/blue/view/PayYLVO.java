@@ -101,7 +101,7 @@ public class PayYLVO {
 	 * 订单描述 描述订单信息，显示在银联支付控件或客户端支付界面中
 	 */
 	private String orderDesc;
-	public static Map<String, String> map = new HashMap<>();
+	public static Map<String, String> map = new HashMap<String, String>();
 
 	@SuppressWarnings("unchecked")
 	public static Map<String, String> param() {

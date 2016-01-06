@@ -110,11 +110,11 @@ public class PublicController {
 	 */
 	@RequestMapping(value = "/getorderfeiyong", method = RequestMethod.GET, produces = { "application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object orderExt(HttpServletRequest request, ModelMap model, long fengeWayId, long fentiwayId,
+	public @ResponseBody Object orderExt(HttpServletRequest request, ModelMap model, long fenggeWayId, long fentiwayId,
 			int guige, long userId, long relationId) throws Exception {
-		if ((fengeWayId == 18 && fentiwayId != 0) || (fengeWayId == 19 && guige != 0)) {
+		if ((fenggeWayId == 18 && fentiwayId != 0) || (fenggeWayId == 19 && guige != 0)) {
 			return ResultUtil.getResultJson(
-					orderService.addOrderByPeiSong(fengeWayId, fentiwayId, guige, userId, relationId),
+					orderService.addOrderByPeiSong(fenggeWayId, fentiwayId, guige, userId, relationId),
 					Status.success.getStatus(), Status.success.getMsg());
 		} else {
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
