@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import com.alipay.api.internal.util.AlipaySignature;
 import com.mobile.blue.launcher.dao.WalletDao;
+import com.mobile.blue.launcher.model.AppOrder;
 import com.mobile.blue.launcher.model.AppWallet;
 import com.mobile.blue.launcher.model.AppWithdrawals;
 import com.mobile.blue.launcher.model.Example.AppWalletExample;
@@ -69,6 +70,7 @@ public class WalletServiceImpl implements WalletService {
 	private WithdrawalsService WithdrawalsService;
 	@Autowired
 	private WalletChangeLogService walletChangeLogService;
+
 	@Override
 	public BigDecimal walletMoney(long userId) {
 		AppWalletExample example = new AppWalletExample();
@@ -144,8 +146,8 @@ public class WalletServiceImpl implements WalletService {
 				return ResultUtil.getResultJson(302, "添加提现记录失败");
 			}
 			// 增加钱包变更记录
-			List<AppWithdrawals> listwith= WithdrawalsService.selectWithdrawall(userId);
-			if(listwith==null || listwith.size()<=0 ){
+			List<AppWithdrawals> listwith = WithdrawalsService.selectWithdrawall(userId);
+			if (listwith == null || listwith.size() <= 0) {
 				return ResultUtil.getResultJson(303, "该用户没有钱包");
 			}
 			if (walletChangeLogService.addChangeLog(list.get(0).getWalletId(), userId, list.get(0).getMoney(), money,
@@ -359,57 +361,7 @@ public class WalletServiceImpl implements WalletService {
 		return ResultUtil.getResultJson(returnmap, Status.success.getStatus(), Status.success.getMsg());
 	}
 
-//	/**
-//	 * 功能：除去数组中的空值和签名参数
-//	 * 
-//	 * @param sArray
-//	 *            签名参数组
-//	 * @return 去掉空值与签名参数后的新签名参数组
-//	 */
-//	private static Map<String, Object> ParaFilter(Map<String, Object> sArray) {
-//		Iterator<String> keys = sArray.keySet().iterator();
-//		Map<String, Object> sArrayNew = new HashMap<String, Object>();
-//		while (keys.hasNext()) {
-//			String key = (String) keys.next();
-//			String value = (String) sArray.get(key);
-//			if (value == null || value.equals("") || key.equalsIgnoreCase("sign")
-//					|| key.equalsIgnoreCase("sign_type")) {
-//				continue;
-//			}
-//			sArrayNew.put(key, value);
-//		}
-//		return sArrayNew;
-//	}
-
-//	/**
-//	 * 功能：把数组所有元素按照一定顺序排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
-//	 * 
-//	 * @param params
-//	 *            需要排序并参与字符拼接的参数组
-//	 * @param pjfs
-//	 *            拼接方式
-//	 * @return 拼接后字符串
-//	 * @throws UnsupportedEncodingException
-//	 */
-//	private String CreateLinkString(Map<String, Object> params, String pjfs) throws UnsupportedEncodingException {
-//		List<String> keys = new ArrayList<String>(params.keySet());
-//		Collections.sort(keys);// 排序
-//		// 去除空值并拼接参数
-//		StringBuffer sb = new StringBuffer();
-//
-//		for (int i = 0; i < keys.size(); i++) {
-//			String key = (String) keys.get(i);
-//			String value = (String) params.get(key);
-//			if (i == keys.size() - 1) {// 拼接时，不包括最后一个&字符
-//				sb.append(key + pjfs + value);
-//			} else {
-//				sb.append(key + pjfs + value + "&");
-//			}
-//		}
-//		return sb.toString();
-//	}
-//	
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>银联支付
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>银联支付
 	/**
 	 * 银联支付
 	 * 
@@ -418,9 +370,9 @@ public class WalletServiceImpl implements WalletService {
 	 * @throws HttpException
 	 * @throws Exception
 	 */
-	public String requestForYL(RequestOrderVo order) throws Exception {
+	public String requestForYL(String orderCode) throws Exception {
 		Map<String, String> json = new HashMap<>();
-		json = SDKUtil.submitUrl(saveyinlian(order), SDKConfig.getConfig().getAppRequestUrl(), SDKUtil.encoding_UTF8);
+		json = SDKUtil.submitUrl(saveyinlian(orderCode), SDKConfig.getConfig().getAppRequestUrl(), SDKUtil.encoding_UTF8);
 		Map<String, Object> returnmap = new HashMap<>();
 		returnmap.put("encoding", json.get("encoding"));
 		returnmap.put("certId", json.get("certId"));
@@ -438,37 +390,7 @@ public class WalletServiceImpl implements WalletService {
 		return ResultUtil.getResultJson(returnmap, Status.success.getStatus(), Status.success.getMsg());
 	}
 
-	// 保存银联需要提交的信息
-	private Map<String, String> saveyinlian(RequestOrderVo order) throws Exception {
-		Map<String, String> contentData = new HashMap<String, String>();
-		contentData.put("version", "5.0.0");
-		contentData.put("encoding", "UTF-8");
-		contentData.put("signMethod", "01");
-		contentData.put("txnType", "01");
-		contentData.put("txnSubType", "01");
-		contentData.put("bizType", "000201");
-		contentData.put("channelType", "07");
-		contentData.put("accessType", "0");
-		contentData.put("accType", "01");
-		contentData.put("currencyCode", "156");
-		contentData.put("reqReserved", "透传字段");
-		contentData.put("merId", "777290058110097");
-		contentData.put("orderId", ((Map<String, Object>) orderService.addOrder(order)).get("orderCode").toString());
-		contentData.put("txnTime", System.currentTimeMillis() + "");
-		contentData.put("encryptCertId", CertUtil.getEncryptCertId());
-		contentData.put("accNo", SDKUtil.encryptPan("6216261000000000018", "UTF-8"));
-		Map<String, String> customerInfoMap = new HashMap<String, String>();
-		customerInfoMap.put("certifTp", "01"); // 证件类型
-		customerInfoMap.put("certifId", "341126197709218366"); // 证件号码
-		contentData.put("customerInfo",
-				SDKUtil.getCustomerInfoWithEncrypt(customerInfoMap, "6216261000000000018", SDKUtil.encoding_UTF8));
-		contentData.put("txnAmt", order.getTotalMoney().intValue() + "");
-		contentData.put("backUrl", "http://pctest.bajiewg.com:8080/launcher/ylNotify");
-		contentData.put("payTimeout", DateUtil.getAfterDate(DateUtil.getCurrentDate(), 2).getTime() + "");
-		contentData.put("orderDesc", order.getRemark());
-		return SDKUtil.signData(contentData, SDKUtil.encoding_UTF8); // 报文中certId,signature的值是在signData方法中获取并自动赋值的，只要证书配置正确即可。
-	}
-	//银联支付的异步通知
+	// 银联支付的异步通知
 	public String ylNotify(JSONObject jsonObject) throws Exception {
 		if (!"000000".equalsIgnoreCase(jsonObject.getString("respCode"))) {
 			return ResultUtil.getResultJson(Status.serverError.getStatus(), Status.serverError.getMsg());
@@ -524,6 +446,44 @@ public class WalletServiceImpl implements WalletService {
 		}
 		return sArrayNew;
 	}
+
+	/**
+	 * 
+	 * @param orderCode
+	 * @return
+	 * @throws Exception
+	 */
+	private Map<String, String> saveyinlian(String orderCode) throws Exception {
+		Map<String, String> contentData = new HashMap<String, String>();
+		contentData.put("version", "5.0.0");
+		contentData.put("encoding", "UTF-8");
+		contentData.put("signMethod", "01");
+		contentData.put("txnType", "01");
+		contentData.put("txnSubType", "01");
+		contentData.put("bizType", "000201");
+		contentData.put("channelType", "07");
+		contentData.put("accessType", "0");
+		contentData.put("accType", "01");
+		contentData.put("currencyCode", "156");
+		contentData.put("reqReserved", "透传字段");
+		contentData.put("merId", "777290058110097");
+		AppOrder order=orderService.selectByorderCode(orderCode);
+		contentData.put("orderId", order.getOrderCode());
+		contentData.put("txnTime", System.currentTimeMillis() + "");
+		contentData.put("encryptCertId", CertUtil.getEncryptCertId());
+		contentData.put("accNo", SDKUtil.encryptPan("6216261000000000018", "UTF-8"));
+		Map<String, String> customerInfoMap = new HashMap<String, String>();
+		customerInfoMap.put("certifTp", "01"); // 证件类型
+		customerInfoMap.put("certifId", "341126197709218366"); // 证件号码
+		contentData.put("customerInfo",
+				SDKUtil.getCustomerInfoWithEncrypt(customerInfoMap, "6216261000000000018", SDKUtil.encoding_UTF8));
+		contentData.put("txnAmt", order.getTotalMoney().intValue() + "");
+		contentData.put("backUrl", "http://pctest.bajiewg.com:8080/launcher/ylNotify");
+		contentData.put("payTimeout", DateUtil.getAfterDate(DateUtil.getCurrentDate(), 2).getTime() + "");
+		contentData.put("orderDesc", order.getRemark());
+		return SDKUtil.signData(contentData, SDKUtil.encoding_UTF8); // 报文中certId,signature的值是在signData方法中获取并自动赋值的，只要证书配置正确即可。
+	}
+
 	/**
 	 * 功能：把数组所有元素按照一定顺序排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
 	 * 

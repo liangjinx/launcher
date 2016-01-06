@@ -12,4 +12,6 @@ public interface AreaService {
 
 	List<AppArea> selectCityInProvince(long provinceCode);
 
+	String selectValueByid(Long province);
+
 }

@@ -1,5 +1,6 @@
 package com.mobile.blue.launcher.service.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,11 +16,17 @@ import org.springframework.stereotype.Service;
 import com.mobile.blue.launcher.dao.OrderDao;
 import com.mobile.blue.launcher.model.AppOrder;
 import com.mobile.blue.launcher.model.AppUser;
+import com.mobile.blue.launcher.model.AppUserAddress;
 import com.mobile.blue.launcher.model.Example.AppOrderExample;
 import com.mobile.blue.launcher.model.Example.AppOrderExample.Criteria;
+import com.mobile.blue.launcher.service.AreaService;
+import com.mobile.blue.launcher.service.EarningsService;
 import com.mobile.blue.launcher.service.MessageService;
 import com.mobile.blue.launcher.service.OrderAddressService;
+import com.mobile.blue.launcher.service.OrderExtFeeService;
 import com.mobile.blue.launcher.service.OrderService;
+import com.mobile.blue.launcher.service.SysconfigService;
+import com.mobile.blue.launcher.service.UserAddressService;
 import com.mobile.blue.launcher.service.UserBasicService;
 import com.mobile.blue.util.DateUtil;
 import com.mobile.blue.util.PageParameter;
@@ -27,6 +34,7 @@ import com.mobile.blue.util.ResultUtil;
 import com.mobile.blue.util.constant.BasicConstant;
 import com.mobile.blue.util.constant.OrderConstant;
 import com.mobile.blue.util.constant.StatusConstant.Status;
+import com.mobile.blue.util.constant.SysConstant;
 import com.mobile.blue.util.util.RandomUtils;
 import com.mobile.blue.view.OrderRankingVo;
 import com.mobile.blue.view.RequestOrderVo;
@@ -43,6 +51,16 @@ public class OrderServiceImpl implements OrderService {
 	private MessageService messageService;
 	@Autowired
 	private UserBasicService userBasicService;
+	@Autowired
+	private SysconfigService sysconfigService;
+	@Autowired
+	private EarningsService earningsService;
+	@Autowired
+	private UserAddressService userAddressService;
+	@Autowired
+	private AreaService areaServicel;
+	@Autowired
+	private OrderExtFeeService orderExtFeeService;
 
 	@Override
 	public Map<String, Object> selectByUserIdAndProjectId(long userId, long projectId) {
@@ -64,7 +82,8 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public List<Map<String, Object>> selectOrderByUserId(long userId, byte type, HttpServletRequest request, int nextpage) {
+	public List<Map<String, Object>> selectOrderByUserId(long userId, byte type, HttpServletRequest request,
+			int nextpage) {
 		AppOrderExample example = new AppOrderExample();
 		Criteria criteria = example.createCriteria();
 		PageParameter page = (PageParameter) request.getSession().getAttribute("orderByuserId");
@@ -79,7 +98,7 @@ public class OrderServiceImpl implements OrderService {
 			int count = orderDao.countByExample(example, criteria);
 			page.setCount(count);
 		} else {
-			if(nextpage>page.getTotal()){
+			if (nextpage > page.getTotal()) {
 				return null;
 			}
 			page.setCurrent(nextpage);
@@ -142,53 +161,56 @@ public class OrderServiceImpl implements OrderService {
 		}
 		return ResultUtil.getResultJson(returnMap, Status.success.getStatus(), Status.success.getMsg());
 	}
-	//
-	// @Override
-	// public String deleteOrder(long userId, long orderId) {
-	// if (orderDao.deleteOrder(orderId) >= 1) {
-	// int status = orderDao.selectByExample(example,
-	// criteria).get(0).getStatus();
-	// BasicConstant.setOrderMessage(orderId, status, "删除");
-	// messageService.addMessage(userId, BasicConstant.getOrderMessage(), 1,
-	// orderId, new Integer(1).byteValue());
-	// }
-	// return ResultUtil.getResultJson(Status.success.getStatus(),
-	// Status.success.getMsg());
-	// }
-	//
-	// // 取消订单,增加记录消息
-	// @Override
-	// public String cancleOrder(long userId, long orderId) {
-	// AppOrder order = new AppOrder();
-	// order.setUserId(userId);
-	// order.setOrderId(orderId);
-	// order.setStatus(new Integer(-1).byteValue());
-	// if (orderDao.updateOrder(order) >= 1) {
-	// criteria.andOrderIdEqualTo(orderId);
-	// criteria.andUserIdEqualTo(userId);
-	// int status = orderDao.selectByExample(example,
-	// criteria).get(0).getStatus();
-	// BasicConstant.setOrderMessage(orderId, status, "取消");
-	// messageService.addMessage(userId, BasicConstant.getOrderMessage(), 1,
-	// orderId, new Integer(1).byteValue());
-	// }
-	// return ResultUtil.getResultJson(Status.success.getStatus(),
-	// Status.success.getMsg());
-	// }
 
 	@Override
 	public Object addOrder(RequestOrderVo orders) throws Exception {
 		AppOrderExample example = new AppOrderExample();
 		Criteria criteria = example.createCriteria();
+		criteria.andUserIdEqualTo(orders.getUserId());
+		criteria.andRelationIdEqualTo(orders.getRelationId());
+		list=orderDao.selectByExample(example, criteria);
+		//以上表示老订单
 		if (orders.getUserId() == 0) {
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 		}
 		AppOrder order = getOrder(orders, 2);
 		if (orderDao.insertOrder(order) > 0) {
-			// criteria.andCtimeEqualTo(order.getCtime());
-			// criteria.andUserIdEqualTo(order.getUserId());
-			// order = orderDao.selectByExample(example, criteria).get(0);
-			// orderAddressService.insertOrderAddress(order.getOrderId(),order.getUserId(),orders.getOrderAdrr(),orders.getRemark());
+			if (orders.getType() == 2) {
+				//表示屠宰配送
+				/**1，修改订单表,增加子订单
+				 * 2，修改订单费用扩展表
+				 * 3，增加订单收获地址
+				 */
+				criteria.andUserIdEqualTo(orders.getUserId());
+				criteria.andRelationIdEqualTo(orders.getRelationId());
+				criteria.andOrderCodeEqualTo(order.getOrderCode());
+				List<AppOrder> li=orderDao.selectByExample(example, criteria);
+				order.setSubOrderId(li.get(0).getOrderId());
+				orderDao.updateOrder(order);
+				
+//				AppOrderExtFee orderextfee=orderExtFeeService.selectByorderId(list.get(0).getOrderId());
+//				orderextfee.setOrderId(li.get(0).getOrderId());
+//				orderExtFeeService.updateOrderExtfee(orderextfee);
+				
+				criteria.andUserIdEqualTo(orders.getUserId());
+				criteria.andRelationIdEqualTo(orders.getRelationId());
+				list=orderDao.selectByExample(example, criteria);
+				AppUserAddress adr = userAddressService.selectUserAddressById(orders.getAddressId());
+				adr.setUserId(orders.getUserId());
+				if (orderAddressService.insertAddress(list.get(0).getOrderId(),adr, orders.getRemark()) > 0) {
+					logger.info("insert order address success buy type 2");
+				}
+			}
+			if (orders.getType() == 3) {
+				// 表示领取活猪
+				criteria.andUserIdEqualTo(orders.getUserId());
+				criteria.andRelationIdEqualTo(orders.getRelationId());
+				list=orderDao.selectByExample(example, criteria);
+				AppUserAddress address = userAddressService.selectUserAddressById(orders.getAddressId());
+				if (orderAddressService.insertAddress(list.get(0).getOrderId(),address, orders.getRemark()) > 0) {
+					logger.info("insert order address success  buy type 3");
+				}
+			}
 			// 发送消息,生成订单成功
 			criteria.andUserIdEqualTo(order.getUserId());
 			criteria.andOrderCodeEqualTo(order.getOrderCode());
@@ -222,7 +244,11 @@ public class OrderServiceImpl implements OrderService {
 			returnmap.put("ctime", order.getCtime() == null ? null : order.getCtime().getTime());
 			returnmap.put("orderCode", order.getOrderCode());
 			return returnmap;
-			// return order.getOrderCode();
+		}else{
+			//删除订单扩展表的信息
+			if(list!=null && list.size()>0){
+				orderExtFeeService.deleteByorderId(list.get(0).getOrderId()+"");
+			}
 		}
 		return null;
 	}
@@ -288,21 +314,6 @@ public class OrderServiceImpl implements OrderService {
 		return order;
 	}
 
-	// private String getMessageType(int status) {
-	// String updateTyoe = "";
-	// switch (status) {
-	// case 1:
-	// updateTyoe = "删除";
-	// break;
-	// case 2:
-	// updateTyoe = "取消";
-	// break;
-	// default:
-	// updateTyoe = "支付";
-	// }
-	// return updateTyoe;
-	// }
-
 	@Override
 	public short selectByUserId(long userId) {
 		AppOrderExample example = new AppOrderExample();
@@ -329,8 +340,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public List<Map<String, Object>> selectByprojectIdList(HttpServletRequest request, int nextPage,
-			long projectId) {
+	public List<Map<String, Object>> selectByprojectIdList(HttpServletRequest request, int nextPage, long projectId) {
 		AppOrderExample example = new AppOrderExample();
 		Criteria criteria = example.createCriteria();
 		PageParameter page = (PageParameter) request.getSession().getAttribute(projectId + "");
@@ -343,7 +353,7 @@ public class OrderServiceImpl implements OrderService {
 			int count = orderDao.countByRanking(example, criteria);
 			page.setCount(count);
 		} else {
-			if(nextPage>page.getTotal()){
+			if (nextPage > page.getTotal()) {
 				return null;
 			}
 			page.setCurrent(nextPage);
@@ -374,5 +384,102 @@ public class OrderServiceImpl implements OrderService {
 			}
 		}
 		return returnlist;
+	}
+
+	@Override
+	public Map<String, Object> addOrderByPeiSong(long fengeWayId, long fentiwayId, int guige, long userId,
+			long relationId) {
+		AppUserAddress useraddr = userAddressService.selectUserDefault(userId);
+		Map<String, Object> datamap = getFeiyong(fengeWayId, fentiwayId, guige, userId, relationId);
+		String addrString = areaServicel.selectValueByid(useraddr.getProvince())
+				+ areaServicel.selectValueByid(useraddr.getCity());
+		datamap.put("address", addrString + useraddr.getAddress());
+		datamap.put("addressId", useraddr.getAddressId());
+		// 增加订单额外费用
+		int fengti = 1;
+		if (fengeWayId == 18) {
+			if (fentiwayId == 43) {
+				fengti = 1;
+			}
+			if (fentiwayId == 44) {
+				fengti = 2;
+			}
+			if (fentiwayId == 45) {
+				fengti = 3;
+			}
+		}
+		AppOrderExample example = new AppOrderExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUserIdEqualTo(userId);
+		criteria.andRelationIdEqualTo(relationId);
+		list=orderDao.selectByExample(example, criteria);
+		orderExtFeeService.addOrderExtFee(list.get(0).getOrderId(),new BigDecimal(datamap.get("totalMoney").toString()),
+				Integer.parseInt(datamap.get("num").toString()),
+				new BigDecimal(datamap.get("singleSendMoney").toString()),
+				new BigDecimal(datamap.get("singleDivisionMoney").toString()), fengeWayId == 18 ? 1 : 2, fengti,
+				new BigDecimal(datamap.get("singlePackageMoney").toString()), guige,
+				Integer.parseInt(datamap.get("weight").toString()),
+				Integer.parseInt(datamap.get("packageNum").toString()));
+		return datamap;
+	}
+
+	private Map<String, Object> getFeiyong(long fengeWayId, long fentiwayId, int guige, long userId, long relationId) {
+		Map<String, Object> earmap = earningsService.selectInvestOne(userId, relationId);
+		// 一个收益表中一个收益的总只数
+		int sum = Integer.parseInt(earmap.get("projectSum").toString())
+				- Integer.parseInt(earmap.get("presentNum").toString());
+		BigDecimal fenfei = null;
+		Map<String, Object> dataMap = new HashMap<String, Object>();
+		BigDecimal danwight = new BigDecimal(sysconfigService.queryByCode(SysConstant.PER_WEIGHT));
+		BigDecimal tuzaisendfei = new BigDecimal(sysconfigService.queryByCode(SysConstant.SLAUGHTER_EXPRESS_FEE));
+		BigDecimal singlePackageMoney = new BigDecimal(0);
+		int packageNum = 0;
+		if (fengeWayId == 18 && fentiwayId != 0) {
+			// 表示的是粗分割
+			fenfei = new BigDecimal(sysconfigService.queryByCode(SysConstant.DIVISION_THICK_FEE));
+			dataMap.put("fengeWay", "粗分割");
+		}
+		if (fengeWayId == 19 && guige != 0) {
+			// 表示的是细分割
+			fenfei = new BigDecimal(sysconfigService.queryByCode(SysConstant.DIVISION_THICK_FEE));
+			BigDecimal baozhuangfei = new BigDecimal(sysconfigService.queryByCode(SysConstant.PACKAGE_FEE));
+			// 单只包装数
+			packageNum = danwight.multiply(BigDecimal.valueOf(500))
+					.divide(new BigDecimal(guige + ""), 2, BigDecimal.ROUND_HALF_UP).intValue();
+			if (danwight.multiply(BigDecimal.valueOf(500)).intValue() % guige > 0) {
+				packageNum++;
+			}
+			// 单只真空包装费 =单只重量（斤==500g）/包装规格（克）*包装费
+			singlePackageMoney = BigDecimal.valueOf(packageNum).multiply(baozhuangfei);
+			dataMap.put("fengeWay", "精细分割");
+		}
+		dataMap.put("num", sum);
+		// 总分割费
+		dataMap.put("divisionMoney", fenfei.multiply(BigDecimal.valueOf(sum)));
+		// 单只分割费
+		dataMap.put("singleDivisionMoney", fenfei);
+		// 总配送费
+		dataMap.put("sendMoney", tuzaisendfei.multiply(BigDecimal.valueOf(sum)));
+		// 单只屠宰配送费
+		dataMap.put("singleSendMoney", tuzaisendfei);
+		// 总包装费
+		dataMap.put("packageMoney", singlePackageMoney.multiply(BigDecimal.valueOf(sum)));
+		// 单包装费
+		dataMap.put("singlePackageMoney", singlePackageMoney);
+		// 总费用 分割费+配送费+包装费
+		dataMap.put("totalMoney", fenfei.add(tuzaisendfei).add(singlePackageMoney));
+		// 单只重量
+		dataMap.put("weight", danwight.multiply(BigDecimal.valueOf(500)));
+		// 总盒数
+		dataMap.put("packageNum", packageNum);
+		return dataMap;
+	}
+
+	@Override
+	public AppOrder selectByorderCode(String orderCode) {
+		AppOrderExample example = new AppOrderExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andOrderCodeEqualTo(orderCode);
+		return orderDao.selectByExample(example, criteria).get(0);
 	}
 }

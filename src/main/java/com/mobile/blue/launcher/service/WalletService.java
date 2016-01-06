@@ -26,7 +26,7 @@ public interface WalletService {
 
 	String getPayResult(String orderId) throws Exception;
 
-	String requestForYL(RequestOrderVo order) throws Exception;
+	String requestForYL(String ordercode) throws Exception;
 
 	String ylNotify(JSONObject jsonObject) throws Exception;
 

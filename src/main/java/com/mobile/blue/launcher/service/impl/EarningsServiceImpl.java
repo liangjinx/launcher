@@ -2,6 +2,7 @@ package com.mobile.blue.launcher.service.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.mobile.blue.util.DateUtil;
 import com.mobile.blue.util.PageParameter;
 import com.mobile.blue.util.ResultUtil;
 import com.mobile.blue.util.constant.BasicConstant;
+import com.mobile.blue.util.constant.CommConstant;
 import com.mobile.blue.util.constant.DictConstant;
 import com.mobile.blue.util.constant.StatusConstant.Status;
 import com.mobile.blue.util.constant.SysConstant;
@@ -101,21 +103,21 @@ public class EarningsServiceImpl implements EarningsService {
 	}
 
 	@Override
-	public String selectInvestOne(long userId, long projectId) {
+	public Map<String, Object> selectInvestOne(long userId, long projectId) {
 		AppMyEarningsExample example = new AppMyEarningsExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUserIdEqualTo(userId);
 		criteria.andPaincbuyProjectIdEqualTo(projectId);
 		list = earningsDao.selectByExample(example, criteria);
+		Map<String, Object> map = new HashMap<String, Object>();
 		if (list == null || list.size() <= 0) {
-			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
+			return map;
 		}
 		Map<String, Object> projectMap = projectService.selectById(list.get(0).getPaincbuyProjectId());
 		if (projectMap == null || projectMap.size() < 1) {
-			return ResultUtil.getResultJson(Status.urlNullity.getStatus(), Status.urlNullity.getMsg());
+			return map;
 		}
 		Map<String, Object> orderMap = orderService.selectByUserIdAndProjectId(userId, projectId);
-		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("rate", list.get(0).getRate());
 		map.put("earningsId", list.get(0).getEarningsId());// DateUtil.format(list.get(0).getBeginTime(),
 															// BasicConstant.DATE_PATTERN)
@@ -128,7 +130,9 @@ public class EarningsServiceImpl implements EarningsService {
 		map.put("orderCode", orderMap.get("order_code"));
 		map.put("totalMoney", orderMap.get("total_money"));
 		map.put("orderId", orderMap.get("order_id"));
-		return ResultUtil.getResultJson(map, Status.success.getStatus(), Status.success.getMsg());
+		map.put("dealStatus", list.get(0).getDealStatus());
+		map.put("presentNum", list.get(0).getPresentNum());
+		return map;
 	}
 
 	@Override
@@ -246,7 +250,7 @@ public class EarningsServiceImpl implements EarningsService {
 				moneys = moneys + earnings.getExpectEarning().doubleValue() * d / Integer.parseInt(day);
 			}
 		}
-		 BigDecimal b3 = new BigDecimal(moneys);
+		BigDecimal b3 = new BigDecimal(moneys);
 		return b3.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 
@@ -364,7 +368,31 @@ public class EarningsServiceImpl implements EarningsService {
 	}
 
 	@Override
-	public int updateReturnWay(byte beforeDealType, byte dealType, long earningId) {
-		return earningsDao.updateReturnWay(beforeDealType, dealType, earningId);
+	public String updateReturnWay(byte beforeDealType, byte dealType, long earningId, long userId) {
+		AppMyEarningsExample example = new AppMyEarningsExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUserIdEqualTo(userId);
+		criteria.andEarningsIdEqualTo(earningId);
+		list = earningsDao.selectByExample(example, criteria);
+		if (list == null || list.size() <= 0) {
+			return ResultUtil.getResultJson(Status.myJoinedProjectNotExist.getStatus(),
+					Status.myJoinedProjectNotExist.getMsg());
+		}
+		String ndays = sysconfigService.queryByCode(SysConstant.CONFIRM_REWARDS_BEFORE_N_DAYS);
+		Date befdate = DateUtil.getBeforeDate(list.get(0).getEndTime(), Integer.parseInt(ndays));
+		if (befdate.getTime() > DateUtil.getCurrentDate().getTime()) {
+			return ResultUtil.getResultJson(Status.cannotModifyRepayType.getStatus(),
+					Status.cannotModifyRepayType.getMsg());
+		}
+		if (list.get(0).getDealStatus() == CommConstant.DEAL_STATUS_1) {
+			return ResultUtil.getResultJson(Status.repayAlreadyDealed.getStatus(), Status.repayAlreadyDealed.getMsg());
+		}
+		if (orderService.selectByUserIdAndProjectId(userId, list.get(0).getPaincbuyProjectId()) == null) {
+			return ResultUtil.getResultJson(Status.cannotModifyRepayTypeBeforeCancelOrder.getStatus(),
+					Status.cannotModifyRepayTypeBeforeCancelOrder.getMsg());
+		}
+		return ResultUtil.getResultJson(
+				earningsDao.updateReturnWay(beforeDealType, dealType, earningId) == 1 ? null : null,
+				Status.success.getStatus(), Status.success.getMsg());
 	}
 }

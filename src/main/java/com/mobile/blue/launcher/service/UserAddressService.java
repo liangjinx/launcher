@@ -23,4 +23,8 @@ public interface UserAddressService {
 
 	String deleteUserAddress(long addressId);
 
+	AppUserAddress selectUserDefault(long userId);
+
+	AppUserAddress selectUserAddressById(long addressId);
+
 }

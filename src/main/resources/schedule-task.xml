@@ -12,9 +12,9 @@
 
    	<!-- Automatically job -->
 	
-<!-- 	<bean id="statisticSchedule" class="com.mobile.blue.schedule.UpdateStatisticsScheduler" ></bean>
+	<bean id="statisticSchedule" class="com.mobile.blue.schedule.PreOrderAdd" ></bean>
     <task:scheduled-tasks>           
-	   <task:scheduled ref="statisticSchedule" method="process" cron="${update.statistics}"/>
-	</task:scheduled-tasks> -->
+	   <task:scheduled ref="statisticSchedule" method="preOrder" cron="${update.preorder}" />
+	</task:scheduled-tasks>
 	
 </beans>

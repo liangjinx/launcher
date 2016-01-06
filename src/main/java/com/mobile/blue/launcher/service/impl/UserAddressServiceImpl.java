@@ -114,4 +114,27 @@ public class UserAddressServiceImpl implements UserAddressService {
 			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
 		return ResultUtil.getResultJson(Status.serverError.getStatus(), Status.serverError.getMsg());
 	}
+
+	@Override
+	public AppUserAddress selectUserDefault(long userId) {
+		AppUserAddressExample userAddressExample = new AppUserAddressExample();
+		Criteria criteria = userAddressExample.createCriteria();
+		criteria.andUserIdEqualTo(userId);
+		criteria.andIsDefaultEqualTo(Byte.parseByte("1"));
+		list=useraddressDao.selectByExample(userAddressExample, criteria);
+		if(list==null || list.size()<=0){
+			criteria.andUserIdEqualTo(userId);
+			list=useraddressDao.selectByExample(userAddressExample, criteria);
+		}
+		return list.get(0);
+	}
+
+	@Override
+	public AppUserAddress selectUserAddressById(long addressId) {
+		AppUserAddressExample userAddressExample = new AppUserAddressExample();
+		Criteria criteria = userAddressExample.createCriteria();
+		criteria.andAddressIdEqualTo(addressId);
+		list=useraddressDao.selectByExample(userAddressExample, criteria);
+		return list.get(0);
+	}
 }

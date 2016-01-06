@@ -67,4 +67,13 @@ public class AreaServiceImpl implements AreaService {
 		list = areaDao.selectByExample(AppareaExample, criteria);
 		return list;
 	}
+
+	@Override
+	public String selectValueByid(Long province) {
+		AppAreaExample AppareaExample = new AppAreaExample();
+		Criteria criteria = AppareaExample.createCriteria();
+		criteria.andAreaIdEqualTo(province);
+		list = areaDao.selectByExample(AppareaExample, criteria);
+		return list.get(0).getName();
+	}
 }
