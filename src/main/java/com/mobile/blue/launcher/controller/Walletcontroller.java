@@ -61,23 +61,26 @@ public class Walletcontroller {
 		}
 		return ResultUtil.getResultJson(Status.bankCardIdNullity.getStatus(), Status.bankCardIdNullity.getMsg());
 	}
-/**
- * 钱包消费记录
- * @param request
- * @param model
- * @param userId
- * @param cardId
- * @param money
- * @param remark
- * @return
- * @throws Exception
- */
+
+	/**
+	 * 钱包消费记录
+	 * 
+	 * @param request
+	 * @param model
+	 * @param userId
+	 * @param cardId
+	 * @param money
+	 * @param remark
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/walletHistory", method = RequestMethod.GET, produces = {
 			"application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object walletHistory(HttpServletRequest request, ModelMap model, long walletId,
-			int nextPage) throws Exception {
-		return walletChangeLogService.selectWallatHistory(walletId,request,nextPage);
+	public @ResponseBody Object walletHistory(HttpServletRequest request, ModelMap model, long userId, int nextPage)
+			throws Exception {
+		return ResultUtil.getResultJson(walletChangeLogService.selectWallatHistory(userId, request, nextPage),
+				Status.success.getStatus(), Status.success.getMsg());
 	}
 
 	// —————钱包管理—————————————————————————————————/

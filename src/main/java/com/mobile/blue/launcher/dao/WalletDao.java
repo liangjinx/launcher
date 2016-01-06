@@ -18,4 +18,6 @@ public interface WalletDao {
 
 	int updateWall(AppWallet wall);
 
+	int insertWallet(Long userId);
+
 }

@@ -4,10 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 public class AppWallet implements Serializable {
-    /**
-=======
 	/**
->>>>>>> 938f25249ed478707b91c1e53cde1125b8a28292
 	 * 
 	 */
 	private static final long serialVersionUID = -2248430864452219949L;

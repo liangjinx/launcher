@@ -552,4 +552,21 @@ public class WalletServiceImpl implements WalletService {
 		return sb.toString();
 	}
 
+	@Override
+	public AppWallet selectWalletByUserId(long userId) {
+		AppWalletExample example = new AppWalletExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUserIdEqualTo(userId);
+		List<AppWallet> list=walletDao.selectByExample(example, criteria);
+		if(list!=null && list.size()>0){
+			return list.get(0);
+		}
+		return null;
+	}
+
+	@Override
+	public int addWallet(Long userId) {
+		return walletDao.insertWallet(userId);
+	}
+
 }

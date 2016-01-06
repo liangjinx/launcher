@@ -295,6 +295,7 @@ public class EarningsServiceImpl implements EarningsService {
 		criteria.andDealStatusEqualTo(Byte.valueOf("0"));
 		int count = earningsDao.countByExample(example, criteria);
 		returnmap.put("num", count);
+		returnmap.put("currDate", DateUtil.getCurrentDate().getTime());
 		// 下面是收益
 		String day = sysconfigService.queryByCode(SysConstant.GROW_UP_DAYS);
 		criteria.andDealStatusEqualTo(Byte.valueOf("0"));

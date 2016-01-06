@@ -148,6 +148,9 @@ public class UserBasicServiceImpl implements UserBasicService {
 		}
 		// 设置用户的预抢默认设置
 		flag = userExtService.insertUserExt(user.getUserId());
+		if(flag==1){
+			flag=walletService.addWallet(user.getUserId());
+		}
 		if (flag == 1) {
 			// 所有都执行成功的时候的返回值
 			Map<String, Object> map = new HashMap<String, Object>();
@@ -431,6 +434,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 
 		String fileAccessPath = "/" + DateUtil.getCurrentDateStr(BasicConstant.DATE_PATH_FILE) + "//headImgFile/";
 		String uploadPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_UPLOAD_ROOT_PATH) + fileAccessPath;
+		String fileac=fileAccessPath="http://192.168.1.143:8181"+fileAccessPath;
 		fileAccessPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_ACCESS_URL) + fileAccessPath;
 		String newFileName = System.currentTimeMillis() + "." + fileTypes;
 		logger.info("uploadPath:"+uploadPath+",newFileName:"+newFileName);
@@ -446,7 +450,8 @@ public class UserBasicServiceImpl implements UserBasicService {
 			localFile.mkdirs();
 		}
 		file.transferTo(localFile);
-		 user.setHeadImg(fileAccessPath + newFileName);
+		
+		 user.setHeadImg(fileac + newFileName);
 		// /opt/APP_tomcat/webapps/launcher/WEB-INF
 		if (userDao.updateUserByUserIdOrPhone(user) >= 1)
 			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());

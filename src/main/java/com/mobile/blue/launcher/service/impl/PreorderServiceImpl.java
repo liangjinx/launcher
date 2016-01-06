@@ -62,6 +62,7 @@ public class PreorderServiceImpl implements PreorderService {
 					}
 				}
 				isupdate=true;
+				type = 0;
 			}
 		} else if (type == TypeConstant.USER_SETTING_TYPE_1) {
 			// 表示每期都抢

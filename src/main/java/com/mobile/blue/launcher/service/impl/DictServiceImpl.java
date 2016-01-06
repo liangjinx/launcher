@@ -15,6 +15,7 @@ import com.mobile.blue.launcher.service.DictDetailService;
 import com.mobile.blue.launcher.service.DictService;
 import com.mobile.blue.launcher.service.SysconfigService;
 import com.mobile.blue.util.ResultUtil;
+import com.mobile.blue.util.constant.SysConstant;
 import com.mobile.blue.util.constant.StatusConstant.Status;
 
 @Service("dictService")
@@ -54,8 +55,9 @@ public class DictServiceImpl implements DictService {
 		Map<String, Object> map = new HashMap<String, Object>();
 		criteria.andCodeEqualTo(thickType);
 		list = dictDao.selectByExamlpe(example, criteria);
-		map.put("DivisionWay", sysconfigService.selectDivisionWay());
+		map.put("DivisionWay", sysconfigService.selectDivisionWay()); 	
 		map.put("ReturnsWay", dictDetailService.queryReturnsWay(list.get(0).getDictId()));
+		map.put("Standard",sysconfigService.selectByCode(SysConstant.PACKAGE_SPECS));
 		return ResultUtil.getResultJson(map, Status.success.getStatus(), Status.success.getMsg());
 	}
 

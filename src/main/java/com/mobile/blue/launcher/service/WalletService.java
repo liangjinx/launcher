@@ -3,6 +3,7 @@ package com.mobile.blue.launcher.service;
 import java.math.BigDecimal;
 import java.util.Map;
 
+import com.mobile.blue.launcher.model.AppWallet;
 import com.mobile.blue.view.RequestOrderVo;
 
 import net.sf.json.JSONObject;
@@ -28,4 +29,8 @@ public interface WalletService {
 	String requestForYL(RequestOrderVo order) throws Exception;
 
 	String ylNotify(JSONObject jsonObject) throws Exception;
+
+	AppWallet selectWalletByUserId(long userId);
+
+	int addWallet(Long userId);
 }

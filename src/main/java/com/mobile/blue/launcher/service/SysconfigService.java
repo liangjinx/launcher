@@ -3,8 +3,6 @@ package com.mobile.blue.launcher.service;
 import java.util.List;
 import java.util.Map;
 
-import com.mobile.blue.launcher.model.AppSysConfig;
-
 public interface SysconfigService {
 
 	String queryByCode(String code);
@@ -13,7 +11,7 @@ public interface SysconfigService {
 
 	String selectStatus(String string, int day);
 
-	List<AppSysConfig> selectDivisionWay();
+	List<Map<String, Object>> selectDivisionWay();
 
 	Map<String, Object> queryList();
 
@@ -22,5 +20,7 @@ public interface SysconfigService {
 	String expensesList();
 
 	Map<String, Object> queryWxAppidAndAppKey();
+
+	List<Map<String, Object>> selectByCode(String packageSpecs);
 
 }

@@ -399,16 +399,16 @@
 			<id>ljx-test</id>
 			<properties>
 				<!-- datasource.properties -->
-				<!-- <datasource.url>jdbc:mysql://192.168.1.216:3308/bjwg_test?useUnicode=true&amp;characterEncoding=utf-8</datasource.url> 
-					<datasource.username>test</datasource.username> <datasource.password>123456</datasource.password> -->
+				<datasource.url>jdbc:mysql://192.168.1.216:3308/bjwg_test?useUnicode=true&amp;characterEncoding=utf-8&amp;zeroDateTimeBehavior=round</datasource.url>
+				<datasource.username>test</datasource.username>
+				<datasource.password>123456</datasource.password>
 
 				<!-- redis.properties -->
 				<redis.host-name>127.0.0.1</redis.host-name>
 				<redis.port>6379</redis.port>
 
-				<datasource.url>jdbc:mysql://120.25.102.41:3306/bjwg_test?useUnicode=true&amp;characterEncoding=utf-8</datasource.url>
-				<datasource.username>root</datasource.username>
-				<datasource.password>Bjwg2015</datasource.password>
+				<!-- <datasource.url>jdbc:mysql://120.25.102.41:3306/bjwg_test?useUnicode=true&amp;characterEncoding=utf-8</datasource.url> 
+					<datasource.username>root</datasource.username> <datasource.password>Bjwg2015</datasource.password> -->
 			</properties>
 		</profile>
 	</profiles>

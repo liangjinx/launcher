@@ -104,18 +104,18 @@ public class OrderServiceImpl implements OrderService {
 				map.put("num", order.getNum());
 				map.put("totalMoney", order.getTotalMoney());
 				map.put("status", order.getStatus());
-				map.put("ctime", order.getCtime() == null ? null : order.getCtime().getTime());
+				map.put("ctime", order.getCtime() == null ? 0 : order.getCtime().getTime());
 				map.put("orderId", order.getOrderId());
 				map.put("orderCode", order.getOrderCode());
 				map.put("type", order.getType());
-				map.put("payTime", order.getPayTime() == null ? null : order.getPayTime().getTime());
+				map.put("payTime", order.getPayTime() == null ? 0 : order.getPayTime().getTime());
 				map.put("userId", order.getUserId());
 				map.put("remark", order.getRemark());
 				map.put("payType", order.getPayType());
-				map.put("overTime", order.getOverTime() == null ? null : order.getOverTime().getTime());
+				map.put("overTime", order.getOverTime() == null ? 0 : order.getOverTime().getTime());
 				map.put("productImg", order.getProductImg());
 				map.put("subOrderId", order.getSubOrderId());
-				map.put("confirmTime", order.getConfirmTime() == null ? null : order.getConfirmTime().getTime());
+				map.put("confirmTime", order.getConfirmTime() == null ? 0 : order.getConfirmTime().getTime());
 				map.put("prepayOrderCode", order.getPrepayOrderCode());
 				returnlist.add(map);
 			}

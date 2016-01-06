@@ -87,16 +87,28 @@ public class SysconfigServiceImpl implements SysconfigService {
 	}
 
 	@Override
-	public List<AppSysConfig> selectDivisionWay() {
+	public List<Map<String, Object>> selectDivisionWay() {
 		AppSysConfigExample sysConfigExample = new AppSysConfigExample();
 		Criteria criteria = sysConfigExample.createCriteria();
 		List<String> configList = new ArrayList<String>();
 		configList.add(SysConstant.DIVISION_THICK_FEE);
 		configList.add(SysConstant.DIVISION_THIN_FEE);
 		configList.add(SysConstant.PACKAGE_FEE);
-		configList.add(SysConstant.PACKAGE_SPECS);
 		criteria.andCodeIn(configList);
-		return sysconfigDao.selectByExample(sysConfigExample, criteria);
+		List<AppSysConfig> list=sysconfigDao.selectByExample(sysConfigExample, criteria);
+		List<Map<String, Object>> returnlist=new ArrayList<Map<String, Object>>();
+		Map<String, Object> returnmap=null;
+		if(list!=null && list.size()>0){
+			for(AppSysConfig config:list){
+				returnmap=new HashMap<String, Object>();
+				returnmap.put("id",config.getId()); 
+				returnmap.put("name", config.getName());
+				returnmap.put("value", config.getValue());
+				returnmap.put("remark", config.getRemark());
+				returnlist.add(returnmap);
+			}
+		}
+		return returnlist;
 	}
 
 	// 得到支付宝支付参数
@@ -190,5 +202,28 @@ public class SysconfigServiceImpl implements SysconfigService {
 		// returnmap.put("sign_type", "MD5");
 		returnmap.put("input_charset", "utf-8");
 		return returnmap;
+	}
+
+	@Override
+	public List<Map<String, Object>> selectByCode(String packageSpecs) {
+		AppSysConfigExample sysConfigExample = new AppSysConfigExample();
+		Criteria criteria = sysConfigExample.createCriteria();
+		List<String> configList = new ArrayList<String>();
+		configList.add(packageSpecs);
+		criteria.andCodeIn(configList);
+		List<AppSysConfig> list=sysconfigDao.selectByExample(sysConfigExample, criteria);
+		List<Map<String, Object>> returnlist=new ArrayList<Map<String, Object>>();
+		Map<String, Object> returnmap=null;
+		if(list!=null && list.size()>0){
+			for(AppSysConfig config:list){
+				returnmap=new HashMap<String, Object>();
+				returnmap.put("id",config.getId()); 
+				returnmap.put("name", config.getName());
+				returnmap.put("value", config.getValue());
+				returnmap.put("remark", config.getRemark());
+				returnlist.add(returnmap);
+			}
+		}
+		return returnlist;
 	}
 }

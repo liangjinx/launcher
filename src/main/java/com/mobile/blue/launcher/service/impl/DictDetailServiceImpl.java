@@ -56,11 +56,23 @@ public class DictDetailServiceImpl implements DictDetailService {
 	}
 
 	@Override
-	public List<AppDictDefatl> queryReturnsWay(Long dictId) {
+	public List<Map<String, Object>> queryReturnsWay(Long dictId) {
 		AppDictDefatlExample example = new AppDictDefatlExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andDictIdEqualTo(dictId);
-		return dictDetailDao.selectselectGrowdefatl(example, criteria);
+		List<AppDictDefatl> list=dictDetailDao.selectselectGrowdefatl(example, criteria);
+		List<Map<String, Object>> returnlist=new ArrayList<Map<String, Object>>();
+		Map<String, Object> returnmap=null;
+		if(list!=null && list.size()>0){
+			for(AppDictDefatl dictdefatl:list){
+				returnmap=new HashMap<String, Object>();
+				returnmap.put("dictDetailId",dictdefatl.getDictDetailId());
+				returnmap.put("value", dictdefatl.getValue());
+				returnmap.put("name", dictdefatl.getName());
+				returnlist.add(returnmap);
+			}
+		}
+		return returnlist;
 	}
 
 	@Override

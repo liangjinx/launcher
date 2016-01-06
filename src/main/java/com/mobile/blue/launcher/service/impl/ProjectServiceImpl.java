@@ -119,7 +119,7 @@ public class ProjectServiceImpl implements ProjectService {
 			list = projectDao.selectByExample(example, criteria);
 		}
 		if (list == null || list.size() <= 0) {
-			return null;
+			return map;
 		}
 		AppProject project = list.get(0);
 		map.put("paincbuy_project_id", project.getPaincbuyProjectId());
