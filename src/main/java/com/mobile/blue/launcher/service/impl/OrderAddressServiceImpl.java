@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.mobile.blue.launcher.dao.OrderAddressDao;
 import com.mobile.blue.launcher.model.AppOrderAddress;
+import com.mobile.blue.launcher.model.AppUserAddress;
 import com.mobile.blue.launcher.model.Example.AppOrderAddressExample;
 import com.mobile.blue.launcher.model.Example.AppOrderAddressExample.Criteria;
 import com.mobile.blue.launcher.service.AreaService;
@@ -38,16 +39,10 @@ public class OrderAddressServiceImpl implements OrderAddressService {
 		return map;
 	}
 
-//	@Override
-//	public int insertOrderAddress(Long orderId, Long userId, Long orderAdrr, String remak) throws Exception {
-//		List<AppUserAddress> orderList = UserAddressService.selectUserAllAdress(null,true,userId);
-//		for (AppUserAddress add : orderList) {
-//			if (orderAdrr == add.getAddressId()) {
-//				orderAddressDao.insertOrder(orderId, add, remak);
-//				break;
-//			}
-//		}
-//		return 0;
-//	}
+
+	@Override
+	public int insertAddress(Long order,AppUserAddress adr, String remark) {
+		return orderAddressDao.insertOrder(order,adr, remark);
+	}
 
 }

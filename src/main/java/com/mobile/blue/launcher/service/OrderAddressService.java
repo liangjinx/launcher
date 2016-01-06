@@ -2,10 +2,12 @@ package com.mobile.blue.launcher.service;
 
 import java.util.Map;
 
+import com.mobile.blue.launcher.model.AppUserAddress;
+
 public interface OrderAddressService {
 
 	Map<String, Object> selectAddressByOrderId(Long orderId);
 
-//	int insertOrderAddress(Long orderId, Long userId, Long orderAdrr, String string) throws Exception;
+	int insertAddress(Long order, AppUserAddress adr, String remark);
 
 }

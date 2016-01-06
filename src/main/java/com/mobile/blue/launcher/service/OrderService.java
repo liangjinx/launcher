@@ -26,6 +26,8 @@ public interface OrderService {
 
 	List<Map<String, Object>> selectByprojectIdList(HttpServletRequest request,int nextPage,long projectId);
 
-	String addOrderByPeiSong(long fengeWayId, long fentiwayId, String guige,int num,long userId,long relationId);
+	Map<String, Object> addOrderByPeiSong(long fengeWayId, long fentiwayId, int guige, long userId, long relationId);
+
+	AppOrder selectByorderCode(String orderCode);
 
 }

@@ -25,9 +25,8 @@ public class OrderAddressDaoImpl implements OrderAddressDao {
 	}
 
 	@Override
-	public int insertOrder(long orderId, AppUserAddress add, String remak) {
+	public int insertOrder(Long order,AppUserAddress add, String remak) {
 		AppOrderAddress orderad = new AppOrderAddress();
-		orderad.setOrderId(orderId);
 		orderad.setAddress(add.getAddress());
 		orderad.setCity(add.getCity());
 		orderad.setLinkMan(add.getContactMan());
@@ -35,7 +34,8 @@ public class OrderAddressDaoImpl implements OrderAddressDao {
 		orderad.setProvince(add.getProvince());
 		orderad.setUserId(add.getUserId());
 		orderad.setRemark(remak);
-		return 0;
+		orderad.setOrderId(order);
+		return appOrderAddressMapper.insertSelective(orderad);
 	}
 
 }

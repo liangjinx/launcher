@@ -11,6 +11,6 @@ public interface OrderAddressDao {
 
 	List<AppOrderAddress> selectByExample(AppOrderAddressExample example, Criteria criteria);
 
-	int insertOrder(long orderId, AppUserAddress add, String remak);
+	int insertOrder(Long order, AppUserAddress add, String remak);
 
 }

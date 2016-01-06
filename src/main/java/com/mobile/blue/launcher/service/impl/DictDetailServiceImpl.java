@@ -113,4 +113,13 @@ public class DictDetailServiceImpl implements DictDetailService {
 		returnmap.put("type",list.get(0).getValue());
 		return returnmap;
 	}
+
+	@Override
+	public String getvalueById(long fentiwayId) {
+		AppDictDefatlExample example = new AppDictDefatlExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andDictDetailIdEqualTo(fentiwayId);
+		list=dictDetailDao.selectselectGrowdefatl(example, criteria);
+		return list.get(0).getValue();
+	}
 }

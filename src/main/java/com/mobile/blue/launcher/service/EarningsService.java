@@ -9,7 +9,7 @@ public interface EarningsService {
 
 	List<Map<String, Object>> selectInvestList(long userID, HttpServletRequest request, int nextPage);
 
-	String selectInvestOne(long userId, long projectId);
+	Map<String, Object> selectInvestOne(long userId, long projectId);
 
 	int selectPigcount(long userId);
 
@@ -25,6 +25,6 @@ public interface EarningsService {
 
 	String earningsRanking(HttpServletRequest request, long userId, int nextPage);
 
-	int updateReturnWay(byte beforeDealType, byte dealType, long earningId);
+	String updateReturnWay(byte beforeDealType, byte dealType, long earningId, long userId);
 
 }

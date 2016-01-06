@@ -26,6 +26,14 @@ public class RequestOrderVo implements Serializable {
 	private String orderCode;
 	private String projectName;
 	private Date overTime;
+	private long addressId;
+	public long getAddressId() {
+		return addressId;
+	}
+
+	public void setAddressId(long addressId) {
+		this.addressId = addressId;
+	}
 
 	public Date getOverTime() {
 		return overTime;

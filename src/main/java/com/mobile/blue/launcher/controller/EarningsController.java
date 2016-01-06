@@ -65,7 +65,7 @@ public class EarningsController {
 	public @ResponseBody Object invest(HttpServletRequest request, ModelMap model, long userId, long projectId)
 			throws Exception {
 		if (userId != 0 && projectId != 0) {
-			return earningsService.selectInvestOne(userId, projectId);
+			return ResultUtil.getResultJson(earningsService.selectInvestOne(userId, projectId), Status.success.getStatus(), Status.success.getMsg());
 		}
 		return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 	}

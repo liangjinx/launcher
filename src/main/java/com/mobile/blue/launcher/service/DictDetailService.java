@@ -17,4 +17,6 @@ public interface DictDetailService {
 
 	Map<String, Object> verifyBankcard(String bankCardNumber);
 
+	String getvalueById(long fentiwayId);
+
 }

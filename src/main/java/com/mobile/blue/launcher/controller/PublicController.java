@@ -96,32 +96,30 @@ public class PublicController {
 			"application/json;charset=UTF-8" })
 	@Transactional
 	public @ResponseBody Object updateReturnWay(HttpServletRequest request, ModelMap model, byte beforeDealType,
-			byte dealType, long earningId) throws Exception {
-		if (earningsService.updateReturnWay(beforeDealType, dealType, earningId) >= 1) {
-			return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
-		}
-		return ResultUtil.getResultJson(Status.saveFail.getStatus(), Status.saveFail.getMsg());
+			byte dealType, long earningId, long userId) throws Exception {
+		return earningsService.updateReturnWay(beforeDealType, dealType, earningId, userId);
 	}
 
 	/**
 	 * 订单额外费用 保存
 	 */
-	/**fengeWayId 表示分割方式的id号码，（精，粗分割方式）
-	 * 分割方式id， fentiwayId(几分体，在精细分割的时候必须选择，在粗分割的时候不需要)
-	 * guige （在选择粗分割的时候必须选择，在精细分割的时候不需要，）
+	/**
+	 * fengeWayId 表示分割方式的id号码，（精，粗分割方式） 分割方式id，
+	 * fentiwayId(几分体，在精细分割的时候必须选择，在粗分割的时候不需要) guige
+	 * （在选择粗分割的时候必须选择，在精细分割的时候不需要，）
 	 */
-	@RequestMapping(value = "/orderExt", method = RequestMethod.GET, produces = {
-			"application/json;charset=UTF-8" })
+	@RequestMapping(value = "/getorderfeiyong", method = RequestMethod.GET, produces = { "application/json;charset=UTF-8" })
 	@Transactional
-	public @ResponseBody Object orderExt(HttpServletRequest request, ModelMap model,long fengeWayId,long  fentiwayId
-			,String guige,int num,long userId,long relationId) throws Exception {
-		if((fengeWayId==18 && fentiwayId!=0) || (fengeWayId==19 && guige!=null && !"".equals(guige))){
-			return orderService.addOrderByPeiSong(fengeWayId,fentiwayId,guige,num,userId,relationId);
-		}
-		else{
+	public @ResponseBody Object orderExt(HttpServletRequest request, ModelMap model, long fengeWayId, long fentiwayId,
+			int guige, long userId, long relationId) throws Exception {
+		if ((fengeWayId == 18 && fentiwayId != 0) || (fengeWayId == 19 && guige != 0)) {
+			return ResultUtil.getResultJson(
+					orderService.addOrderByPeiSong(fengeWayId, fentiwayId, guige, userId, relationId),
+					Status.success.getStatus(), Status.success.getMsg());
+		} else {
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 		}
-		
+
 	}
 
 	/**
