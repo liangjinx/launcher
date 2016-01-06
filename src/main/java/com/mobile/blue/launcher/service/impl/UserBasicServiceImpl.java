@@ -296,7 +296,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 	public List<AppUser> searchFriends(HttpServletRequest request,List<Long> list, String serachValue,int nextpage) {
 		AppUserExample userExample = new AppUserExample();
 		Criteria criteria = userExample.createCriteria();
-		serachValue = "%"+ serachValue + "%";
+		
 		PageParameter page=(PageParameter) request.getSession().getAttribute("searchFriends"+serachValue);
 		if(page==null){
 			page = new PageParameter(0,BasicConstant.limit_page_size);
@@ -305,13 +305,14 @@ public class UserBasicServiceImpl implements UserBasicService {
 			} else {
 				criteria.andUserIdNotIn(list);
 			}
+			String serachString1="%"+ serachValue + "%";
 			if (Verification.isPhone(serachValue)){
 				logger.info("查询的手机号码是"+serachValue);
-				criteria.andPhoneLike(serachValue);
+				criteria.andPhoneLike(serachString1);
 			}
 			else {
 //				criteria.andNicknameLike(serachValue);
-				criteria.andUsernameLike(serachValue);
+				criteria.andUsernameLike(serachString1);
 				logger.info("查询的用户名或昵称是"+serachValue);
 			}
 			int count=userDao.countByExample(userExample, criteria);
@@ -327,13 +328,14 @@ public class UserBasicServiceImpl implements UserBasicService {
 		} else {
 			criteria.andUserIdNotIn(list);
 		}
+		String serachString1="%"+ serachValue + "%";
 		if (Verification.isPhone(serachValue)){
 			logger.info("查询的手机号码是"+serachValue);
-			criteria.andPhoneLike(serachValue);
+			criteria.andPhoneLike(serachString1);
 		}
 		else {
 //			criteria.andNicknameLike(serachValue);
-			criteria.andUsernameLike(serachValue);
+			criteria.andUsernameLike(serachString1);
 			logger.info("查询的用户名或昵称是"+serachValue);
 		}
 		logger.info("page:"+page.toString());

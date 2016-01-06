@@ -133,6 +133,7 @@ public class EarningsServiceImpl implements EarningsService {
 		map.put("dealStatus", list.get(0).getDealStatus());
 		map.put("presentNum", list.get(0).getPresentNum());
 		map.put("dealType", list.get(0).getDealType());
+		map.put("num", list.get(0).getNum());
 		return map;
 	}
 

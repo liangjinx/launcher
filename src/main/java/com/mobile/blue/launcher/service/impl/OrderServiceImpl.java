@@ -475,7 +475,7 @@ public class OrderServiceImpl implements OrderService {
 	private Map<String, Object> getFeiyong(long fengeWayId, long fentiwayId, int guige, long userId, long relationId) {
 		Map<String, Object> earmap = earningsService.selectInvestOne(userId, relationId);
 		// 一个收益表中一个收益的总只数
-		int sum = Integer.parseInt(earmap.get("projectSum").toString())
+		int sum = Integer.parseInt(earmap.get("num").toString())
 				- Integer.parseInt(earmap.get("presentNum").toString());
 		BigDecimal fenfei = null;
 		Map<String, Object> dataMap = new HashMap<String, Object>();
