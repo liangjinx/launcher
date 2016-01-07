@@ -119,7 +119,6 @@ public class PublicController {
 		} else {
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 		}
-
 	}
 
 	/**

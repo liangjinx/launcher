@@ -536,4 +536,21 @@ public class OrderServiceImpl implements OrderService {
 		criteria.andOrderCodeEqualTo(orderCode);
 		return orderDao.selectByExample(example, criteria).get(0);
 	}
+
+	@Override
+	public Map<String, Object> getOrderAddr(HttpServletRequest request, long userId) {
+		AppUserAddress useraddr = userAddressService.selectUserDefault(userId);
+		Map<String, Object> datamap=new HashMap<String, Object>();
+		String addrString ="";
+		if(useraddr.getProvince()!=null){
+			addrString =areaServicel.selectValueByid(useraddr.getProvince());
+		}else if(useraddr.getCity()!=null){
+			addrString =areaServicel.selectValueByid(useraddr.getCity());
+		}
+		datamap.put("address", addrString + useraddr.getAddress());
+		datamap.put("addressId", useraddr.getAddressId());
+		datamap.put("contactMan", useraddr.getContactMan());
+		datamap.put("phone", useraddr.getContactPhone());
+		return datamap;
+	}
 }

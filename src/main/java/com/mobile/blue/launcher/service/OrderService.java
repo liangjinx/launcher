@@ -30,4 +30,6 @@ public interface OrderService {
 
 	AppOrder selectByorderCode(String orderCode);
 
+	Map<String, Object> getOrderAddr(HttpServletRequest request, long userId);
+
 }

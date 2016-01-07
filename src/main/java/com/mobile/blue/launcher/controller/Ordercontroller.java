@@ -73,4 +73,14 @@ public class Ordercontroller {
 		}
 		return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 	}
+	//得到用户的默认收货地址
+	@RequestMapping(value = "/getOrderAddr", method = RequestMethod.GET, produces = { "application/json;charset=UTF-8" })
+	@Transactional
+	public @ResponseBody Object getOrderAddr(HttpServletRequest request, ModelMap model, long userId )
+			throws Exception {
+		if (userId != 0) {
+			return ResultUtil.getResultJson(orderService.getOrderAddr(request,userId),Status.success.getStatus(), Status.success.getMsg());
+		}
+		return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
+	}
 }
