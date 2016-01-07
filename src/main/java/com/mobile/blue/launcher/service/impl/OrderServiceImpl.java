@@ -158,9 +158,11 @@ public class OrderServiceImpl implements OrderService {
 			if (order.getType().intValue() == OrderConstant.ORDER_TYPE_2
 					|| order.getType().intValue() == OrderConstant.ORDER_TYPE_3) {
 				Map<String, Object> map = orderAddressService.selectAddressByOrderId(order.getOrderId());
-				returnMap.put("province", map.get("province"));
-				returnMap.put("city", map.get("city"));
-				returnMap.put("address", map.get("province").toString() + map.get("city") + map.get("address"));
+				if(map!=null){
+					returnMap.put("province", map.get("province"));
+					returnMap.put("city", map.get("city"));
+					returnMap.put("address", map.get("province").toString() + map.get("city") + map.get("address"));
+				}
 			}
 		}
 		return ResultUtil.getResultJson(returnMap, Status.success.getStatus(), Status.success.getMsg());
@@ -180,7 +182,8 @@ public class OrderServiceImpl implements OrderService {
 		}
 		if(orders.getPrice()==null){
 			orders.setPrice(new BigDecimal(map.get("price").toString()));
-			orders.setTotalMoney(orders.getPrice().multiply(new BigDecimal(orders.getNum())));
+			orders.setIsShow(Byte.parseByte("1"));
+			orders.setProjectName(map.get("name").toString());
 		}
 		orders.setStatus(Byte.parseByte("1"));
 		AppOrder order = getOrder(orders, 2);
@@ -198,11 +201,12 @@ public class OrderServiceImpl implements OrderService {
 					order.setSubOrderId(li.get(0).getOrderId());
 					orderDao.updateOrder(order);
 				}
-				// AppOrderExtFee
-				// orderextfee=orderExtFeeService.selectByorderId(list.get(0).getOrderId());
-				// orderextfee.setOrderId(li.get(0).getOrderId());
-				// orderExtFeeService.updateOrderExtfee(orderextfee);
-
+				Map<String, Object> orderMap = earningsService.selectInvestOne(order.getUserId(), order.getRelationId());
+				earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()), 
+						Byte.parseByte("2"),
+						Long.parseLong(orderMap.get("earningsId").toString()), order.getUserId());
+				
+				
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				list = orderDao.selectByExample(example, criteria);
@@ -216,15 +220,29 @@ public class OrderServiceImpl implements OrderService {
 				
 			}
 			if (orders.getType() == 3) {
-				// 表示领取活猪
+				// 表示领取活猪,
+				/**
+				 * 1,收益表，修改收益的回报方式
+				 *2，添加收货地址信息
+				 */
+				Map<String, Object> orderMap = earningsService.selectInvestOne(order.getUserId(), order.getRelationId());
+				earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()), 
+						Byte.parseByte("3"),
+						Long.parseLong(orderMap.get("earningsId").toString()), order.getUserId());
+				// 2
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				list = orderDao.selectByExample(example, criteria);
 				if(list!=null && list.size()>0){
 					AppUserAddress address = userAddressService.selectUserAddressById(orders.getAddressId());
-					if (orderAddressService.insertAddress(list.get(0).getOrderId(), address, orders.getRemark()) > 0) {
-						logger.info("insert order address success  buy type 3");
+					if(orderAddressService.selectAddressByOrderId(list.get(0).getOrderId())==null){
+						if (orderAddressService.insertAddress(list.get(0).getOrderId(), address, orders.getRemark()) > 0) {
+							logger.info("insert order address success  buy type 3");
+						}
+					}else{
+						orderAddressService.updateorderAddress(list.get(0).getOrderId(),address);
 					}
+				
 				}
 			}
 			// 发送消息,生成订单成功

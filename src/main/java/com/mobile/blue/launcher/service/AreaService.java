@@ -14,4 +14,6 @@ public interface AreaService {
 
 	String selectValueByid(Long province);
 
+	AppArea selectById(Long areaId);
+
 }

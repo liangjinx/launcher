@@ -10,4 +10,6 @@ public interface OrderAddressService {
 
 	int insertAddress(Long order, AppUserAddress adr, String remark);
 
+	int updateorderAddress(Long orderId, AppUserAddress address);
+
 }

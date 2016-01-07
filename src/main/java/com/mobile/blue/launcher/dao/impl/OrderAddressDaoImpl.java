@@ -38,4 +38,17 @@ public class OrderAddressDaoImpl implements OrderAddressDao {
 		return appOrderAddressMapper.insertSelective(orderad);
 	}
 
+	@Override
+	public int updateorderAddress(Long orderId, AppUserAddress add) {
+		AppOrderAddress orderad = new AppOrderAddress();
+		orderad.setAddress(add.getAddress());
+		orderad.setCity(add.getCity());
+		orderad.setLinkMan(add.getContactMan());
+		orderad.setLinkPhone(add.getContactPhone());
+		orderad.setProvince(add.getProvince());
+		orderad.setUserId(add.getUserId());
+		orderad.setOrderId(orderId);
+		return appOrderAddressMapper.updateByPrimaryKeySelective(orderad);
+	}
+
 }

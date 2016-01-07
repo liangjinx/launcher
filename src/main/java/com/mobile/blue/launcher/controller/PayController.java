@@ -125,9 +125,9 @@ public class PayController {
 			"application/json;charset=UTF-8" })
 	@Transactional
 	public @ResponseBody Object requestForYL(HttpServletRequest request, HttpServletResponse response, ModelMap model,
-			String ordercode) throws IOException {
+			@RequestBody RequestOrderVo order) throws IOException {
 		try {
-			return walletService.requestForYL(ordercode);
+			return walletService.requestForYL(order.getOrderCode());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

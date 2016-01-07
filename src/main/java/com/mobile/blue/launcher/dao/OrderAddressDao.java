@@ -13,4 +13,6 @@ public interface OrderAddressDao {
 
 	int insertOrder(Long order, AppUserAddress add, String remak);
 
+	int updateorderAddress(Long orderId, AppUserAddress address);
+
 }

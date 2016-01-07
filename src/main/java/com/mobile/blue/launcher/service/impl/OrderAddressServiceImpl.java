@@ -30,10 +30,10 @@ public class OrderAddressServiceImpl implements OrderAddressService {
 		criteria.andOrderIdEqualTo(orderId);
 		list = orderAddressDao.selectByExample(example, criteria);
 		Map<String, Object> map = null;
-		if (list.size() > 0) {
+		if (list!=null && list.size() > 0) {
 			map = new HashMap<String, Object>();
-			map.put("province", areaService.selectCityInProvince(list.get(0).getProvince()).get(0).getName());
-			map.put("city", areaService.selectCityInProvince(list.get(0).getCity()).get(0).getName());
+			map.put("province", areaService.selectById(list.get(0).getProvince()).getName());
+			map.put("city", areaService.selectById(list.get(0).getCity()).getName());
 			map.put("address", list.get(0).getAddress());
 		}
 		return map;
@@ -43,6 +43,13 @@ public class OrderAddressServiceImpl implements OrderAddressService {
 	@Override
 	public int insertAddress(Long order,AppUserAddress adr, String remark) {
 		return orderAddressDao.insertOrder(order,adr, remark);
+	}
+
+
+	@Override
+	public int updateorderAddress(Long orderId, AppUserAddress address) {
+		// TODO Auto-generated method stub
+		return orderAddressDao.updateorderAddress(orderId,address);
 	}
 
 }
