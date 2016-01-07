@@ -383,7 +383,7 @@ public class EarningsServiceImpl implements EarningsService {
 		}
 		String ndays = sysconfigService.queryByCode(SysConstant.CONFIRM_REWARDS_BEFORE_N_DAYS);
 		Date befdate = DateUtil.getBeforeDate(list.get(0).getEndTime(), Integer.parseInt(ndays));
-		if (befdate.getTime() > DateUtil.getCurrentDate().getTime()) {
+		if (befdate.getTime() < DateUtil.getCurrentDate().getTime()) {
 			return ResultUtil.getResultJson(Status.cannotModifyRepayType.getStatus(),
 					Status.cannotModifyRepayType.getMsg());
 		}

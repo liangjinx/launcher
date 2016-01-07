@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.mobile.blue.launcher.dao.OrderDao;
 import com.mobile.blue.launcher.model.AppOrder;
 import com.mobile.blue.launcher.model.AppOrderExtFee;
@@ -172,6 +173,21 @@ public class OrderServiceImpl implements OrderService {
 	public Object addOrder(RequestOrderVo orders) throws Exception {
 		AppOrderExample example = new AppOrderExample();
 		Criteria criteria = example.createCriteria();
+		if(orders.getType()==2|| orders.getType()==3){
+			Map<String, Object> orderMap = earningsService.selectInvestOne(orders.getUserId(), orders.getRelationId());
+			String vlaue=earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()), 
+					Byte.parseByte("3"),
+					Long.parseLong(orderMap.get("earningsId").toString()), orders.getUserId());
+			JSONObject json=new JSONObject();
+			json=(JSONObject) json.parse(vlaue);
+			if(Integer.parseInt(json.getShort("status").toString())==1){
+				
+			}else{
+				return vlaue;
+			}
+			
+			
+		}
 		// 以上表示老订单
 		Map<String, Object> map = projectService.selectById(orders.getRelationId());
 		if(map==null || map.size()<0){
@@ -201,12 +217,6 @@ public class OrderServiceImpl implements OrderService {
 					order.setSubOrderId(li.get(0).getOrderId());
 					orderDao.updateOrder(order);
 				}
-				Map<String, Object> orderMap = earningsService.selectInvestOne(order.getUserId(), order.getRelationId());
-				earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()), 
-						Byte.parseByte("2"),
-						Long.parseLong(orderMap.get("earningsId").toString()), order.getUserId());
-				
-				
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				list = orderDao.selectByExample(example, criteria);
@@ -225,11 +235,6 @@ public class OrderServiceImpl implements OrderService {
 				 * 1,收益表，修改收益的回报方式
 				 *2，添加收货地址信息
 				 */
-				Map<String, Object> orderMap = earningsService.selectInvestOne(order.getUserId(), order.getRelationId());
-				earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()), 
-						Byte.parseByte("3"),
-						Long.parseLong(orderMap.get("earningsId").toString()), order.getUserId());
-				// 2
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				list = orderDao.selectByExample(example, criteria);
