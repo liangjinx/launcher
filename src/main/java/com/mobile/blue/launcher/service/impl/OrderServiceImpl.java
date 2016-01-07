@@ -178,6 +178,11 @@ public class OrderServiceImpl implements OrderService {
 		if (orders.getUserId() == 0) {
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 		}
+		if(orders.getPrice()==null){
+			orders.setPrice(new BigDecimal(map.get("price").toString()));
+			orders.setTotalMoney(orders.getPrice().multiply(new BigDecimal(orders.getNum())));
+		}
+		orders.setStatus(Byte.parseByte("1"));
 		AppOrder order = getOrder(orders, 2);
 		if (orderDao.insertOrder(order) > 0) {
 			if (orders.getType() == 2) {
@@ -451,7 +456,7 @@ public class OrderServiceImpl implements OrderService {
 					new BigDecimal(datamap.get("singleSendMoney").toString()),
 					new BigDecimal(datamap.get("singleDivisionMoney").toString()), fengeWayId == 18 ? 1 : 2, fengti,
 					new BigDecimal(datamap.get("singlePackageMoney").toString()), guige,
-					Integer.parseInt(datamap.get("weight").toString()),
+					Integer.parseInt(datamap.get("weight").toString())/500,
 					Integer.parseInt(datamap.get("packageNum").toString()));
 		}
 		else{
@@ -465,7 +470,7 @@ public class OrderServiceImpl implements OrderService {
 			extfee.setDivisionMode(Byte.parseByte(fengti+""));
 			extfee.setPackageFee(new BigDecimal(datamap.get("singlePackageMoney").toString()));
 			extfee.setSpec(guige);
-			extfee.setWeight(new BigDecimal(datamap.get("weight").toString()));
+			extfee.setWeight(new BigDecimal(datamap.get("weight").toString()).divide(new BigDecimal("500")));
 			extfee.setPackageNum(Integer.parseInt(datamap.get("packageNum").toString()));
 			orderExtFeeService.updateOrderExtfee(extfee);
 		}
