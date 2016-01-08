@@ -23,4 +23,9 @@ public class ProjectDaoImpl implements ProjectDao {
 		return list;
 	}
 
+	@Override
+	public int updateProject(AppProject project) {
+		return appProjectMapper.updateByPrimaryKeySelective(project);
+	}
+
 }

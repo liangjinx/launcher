@@ -137,4 +137,16 @@ public class ProjectServiceImpl implements ProjectService {
 		return map;
 	}
 
+	@Override
+	public int updateProject(Long paincbuyProjectId, Short num) {
+		AppProjectExample example = new AppProjectExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andPaincbuyProjectIdEqualTo(paincbuyProjectId);
+		list = projectDao.selectByExample(example, criteria);
+		AppProject project=list.get(0);
+		project.setPaincbuyProjectId(paincbuyProjectId);
+		project.setLeftNum(Short.parseShort(project.getLeftNum()+num+""));
+		return projectDao.updateProject(project);
+	}
+
 }

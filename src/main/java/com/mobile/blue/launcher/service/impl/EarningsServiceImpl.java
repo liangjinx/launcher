@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.mobile.blue.launcher.dao.EarningsDao;
 import com.mobile.blue.launcher.model.AppBulletin;
 import com.mobile.blue.launcher.model.AppMyEarnings;
+import com.mobile.blue.launcher.model.AppPresentFreinds;
 import com.mobile.blue.launcher.model.Example.AppMyEarningsExample;
 import com.mobile.blue.launcher.model.Example.AppMyEarningsExample.Criteria;
 import com.mobile.blue.launcher.service.BulletinService;
@@ -22,6 +23,7 @@ import com.mobile.blue.launcher.service.DictService;
 import com.mobile.blue.launcher.service.EarningsService;
 import com.mobile.blue.launcher.service.FriendService;
 import com.mobile.blue.launcher.service.OrderService;
+import com.mobile.blue.launcher.service.PresentFreindsService;
 import com.mobile.blue.launcher.service.ProjectService;
 import com.mobile.blue.launcher.service.SysconfigService;
 import com.mobile.blue.util.DateUtil;
@@ -54,6 +56,8 @@ public class EarningsServiceImpl implements EarningsService {
 	private FriendService friendService;
 	@Autowired
 	private BulletinService bulletinService;
+	@Autowired
+	private PresentFreindsService presentFreindsService;
 
 	@Override
 	public List<Map<String, Object>> selectInvestList(long userId, HttpServletRequest request, int nextPage) {
@@ -89,7 +93,7 @@ public class EarningsServiceImpl implements EarningsService {
 				Map<String, Object> orderMap = orderService.selectByUserIdAndProjectId(userId,
 						earning.getPaincbuyProjectId());
 				map.put("userId", userId);
-				map.put("num", orderMap.get("num") == null ? 0 : orderMap.get("num"));
+				map.put("num", earning.getNum()-earning.getPresentNum());
 				map.put("total_money", orderMap.get("total_money") == null ? 0 : orderMap.get("total_money"));
 				BigDecimal big = new BigDecimal(
 						DateUtil.daysBetween(earning.getBeginTime(), DateUtil.getCurrentDate()) / 1.5);
@@ -189,43 +193,45 @@ public class EarningsServiceImpl implements EarningsService {
 		list = earningsDao.selectByExample(example, criteria);
 		if (list.size() <= 0) {
 			return ResultUtil.getResultJson(Status.urlNullity.getStatus(), Status.urlNullity.getMsg());
-		} else if (list.get(0).getNum() == 1) {
+		} else if (list.get(0).getNum() == 1 || list.get(0).getNum() < number) {
 			return ResultUtil.getResultJson(Status.saleNumNotEnough.getStatus(), Status.saleNumNotEnough.getMsg());
 		}
-		if (list.get(0).getNum() < number) {
-			return ResultUtil.getResultJson(Status.saleNumNotEnough.getStatus(), Status.saleNumNotEnough.getMsg());
-		}
-		// 查询该订单的数量
-		// Map<String, Object> map =
-		// orderService.selectByUserIdAndProjectId(userId,
-		// list.get(0).getPaincbuyProjectId());
-		// if (Integer.parseInt(map.get("num").toString()) < number) {
-		//
-		// }
 		// 修改我的猪仔数量
 		AppMyEarnings earnings = new AppMyEarnings();
-		earnings.setUserId(userId);
-		earnings.setNum(list.get(0).getNum() - number);
+		earnings.setPresentNum(number);
 		earnings.setEarningsId(earningsId);
 		earningsDao.updateEarnings(earnings);
 		// 修改好友的猪仔数量
 		criteria.andUserIdEqualTo(friendId);
 		criteria.andEarningsIdEqualTo(earningsId);
 		List<AppMyEarnings> friendearnigns = earningsDao.selectByExample(example, criteria);
-		if (friendearnigns.size() < 1) {
+		if (friendearnigns==null || friendearnigns.size() < 1) {
 			list.get(0).setUserId(friendId);
 			list.get(0).setNum(number);
 			list.get(0).setPresentNum(0);
 			list.get(0).setEarningsId(null);
 			earningsDao.insertEarnings(list.get(0));
 		} else {
-			earnings.setUserId(friendId);
 			earnings.setNum(friendearnigns.get(0).getNum() + number);
 			earnings.setEarningsId(earningsId);
 			if (earningsDao.updateEarnings(earnings) < 1) {
 				return ResultUtil.getResultJson(Status.saveFail.getStatus(), Status.saveFail.getMsg());
 			}
 		}
+		// 添加赠送记录 userId,friendId,earningsId,number,1,
+		AppPresentFreinds presend = new AppPresentFreinds();
+		presend.setPresentUserId(userId);
+		presend.setPresentedUserId(friendId);
+		presend.setPresentNum(number);
+		presend.setType(Byte.parseByte("1"));
+		presend.setPresentedRelationId(earningsId);
+		// 查询好友的收益id
+		criteria.andUserIdEqualTo(friendId);
+		criteria.andPaincbuyProjectIdEqualTo(list.get(0).getPaincbuyProjectId());
+		presend.setPresentedRelationId(earningsDao.selectByExample(example, criteria).get(0).getEarningsId());
+		presend.setPrice(
+				new BigDecimal(projectService.selectById(list.get(0).getPaincbuyProjectId()).get("price").toString()));
+		presentFreindsService.insertSendFriendPig(presend);
 		return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
 	}
 
@@ -397,5 +403,13 @@ public class EarningsServiceImpl implements EarningsService {
 		return ResultUtil.getResultJson(
 				earningsDao.updateReturnWay(beforeDealType, dealType, earningId) == 1 ? null : null,
 				Status.success.getStatus(), Status.success.getMsg());
+	}
+
+	@Override
+	public AppMyEarnings selectByearningsId(Long presentRelationId) {
+		AppMyEarningsExample example = new AppMyEarningsExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andEarningsIdEqualTo(presentRelationId);
+		return earningsDao.selectByExample(example, criteria).get(0);
 	}
 }

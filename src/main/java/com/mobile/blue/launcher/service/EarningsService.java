@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.mobile.blue.launcher.model.AppMyEarnings;
+
 public interface EarningsService {
 
 	List<Map<String, Object>> selectInvestList(long userID, HttpServletRequest request, int nextPage);
@@ -26,5 +28,7 @@ public interface EarningsService {
 	String earningsRanking(HttpServletRequest request, long userId, int nextPage);
 
 	String updateReturnWay(byte beforeDealType, byte dealType, long earningId, long userId);
+
+	AppMyEarnings selectByearningsId(Long presentRelationId);
 
 }

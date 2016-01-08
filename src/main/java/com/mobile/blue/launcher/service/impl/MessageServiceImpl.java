@@ -140,12 +140,11 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public String updateMessage(long userId, long messageId) {
 		AppMessage message = new AppMessage();
-		message.setUserId(userId);
 		message.setMessageId(messageId);
 		message.setStatus(new Integer(1).byteValue());
 		messageDao.updateMessage(message);
 		return ResultUtil.getResultJson(Status.success.getStatus(), Status.success.getMsg());
-	}
+	} 
 
 	// 从网上获取视频信息
 	@Override

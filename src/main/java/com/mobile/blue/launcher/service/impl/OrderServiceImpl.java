@@ -159,7 +159,7 @@ public class OrderServiceImpl implements OrderService {
 			if (order.getType().intValue() == OrderConstant.ORDER_TYPE_2
 					|| order.getType().intValue() == OrderConstant.ORDER_TYPE_3) {
 				Map<String, Object> map = orderAddressService.selectAddressByOrderId(order.getOrderId());
-				if(map!=null){
+				if (map != null) {
 					returnMap.put("province", map.get("province"));
 					returnMap.put("city", map.get("city"));
 					returnMap.put("address", map.get("province").toString() + map.get("city") + map.get("address"));
@@ -169,40 +169,42 @@ public class OrderServiceImpl implements OrderService {
 		return ResultUtil.getResultJson(returnMap, Status.success.getStatus(), Status.success.getMsg());
 	}
 
+	@SuppressWarnings("static-access")
 	@Override
 	public Object addOrder(RequestOrderVo orders) throws Exception {
 		AppOrderExample example = new AppOrderExample();
 		Criteria criteria = example.createCriteria();
-		if(orders.getType()==2|| orders.getType()==3){
+		if (orders.getType() == 2 || orders.getType() == 3) {
 			Map<String, Object> orderMap = earningsService.selectInvestOne(orders.getUserId(), orders.getRelationId());
-			String vlaue=earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()), 
-					Byte.parseByte("3"),
-					Long.parseLong(orderMap.get("earningsId").toString()), orders.getUserId());
-			JSONObject json=new JSONObject();
-			json=(JSONObject) json.parse(vlaue);
-			if(Integer.parseInt(json.getShort("status").toString())==1){
-				
-			}else{
+			String vlaue = earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()),
+					Byte.parseByte("3"), Long.parseLong(orderMap.get("earningsId").toString()), orders.getUserId());
+			JSONObject json = new JSONObject();
+			json = (JSONObject) json.parse(vlaue);
+			if (Integer.parseInt(json.getShort("status").toString()) == 1) {
+
+			} else {
 				return vlaue;
 			}
-			
-			
+
 		}
 		// 以上表示老订单
 		Map<String, Object> map = projectService.selectById(orders.getRelationId());
-		if(map==null || map.size()<0){
+		if (map == null || map.size() < 0) {
 			return null;
 		}
 		if (orders.getUserId() == 0) {
 			return ResultUtil.getResultJson(Status.missParam.getStatus(), Status.missParam.getMsg());
 		}
-		if(orders.getPrice()==null){
+		if (orders.getPrice() == null) {
 			orders.setPrice(new BigDecimal(map.get("price").toString()));
-			orders.setIsShow(Byte.parseByte("1"));
+		}
+		if (orders.getProjectName() == null || "".equals(orders.getProjectName())) {
 			orders.setProjectName(map.get("name").toString());
 		}
+		orders.setIsShow(Byte.parseByte("1"));
 		orders.setStatus(Byte.parseByte("1"));
 		AppOrder order = getOrder(orders, 2);
+		int flag = 0;
 		if (orderDao.insertOrder(order) > 0) {
 			if (orders.getType() == 2) {
 				// 表示屠宰配送
@@ -213,76 +215,83 @@ public class OrderServiceImpl implements OrderService {
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				criteria.andOrderCodeEqualTo(order.getOrderCode());
 				List<AppOrder> li = orderDao.selectByExample(example, criteria);
-				if(li!=null && li.size()>0){
+				if (li != null && li.size() > 0) {
 					order.setSubOrderId(li.get(0).getOrderId());
-					orderDao.updateOrder(order);
+					flag = orderDao.updateOrder(order);
 				}
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				list = orderDao.selectByExample(example, criteria);
 				AppUserAddress adr = userAddressService.selectUserAddressById(orders.getAddressId());
 				adr.setUserId(orders.getUserId());
-				if(list!=null && list.size()>0){
+				if (list == null || list.size() <= 0) {
 					if (orderAddressService.insertAddress(list.get(0).getOrderId(), adr, orders.getRemark()) > 0) {
 						logger.info("insert order address success buy type 2");
+						flag = 1;
 					}
 				}
-				
-			}
-			if (orders.getType() == 3) {
+
+			} else if (orders.getType() == 3) {
 				// 表示领取活猪,
 				/**
-				 * 1,收益表，修改收益的回报方式
-				 *2，添加收货地址信息
+				 * 1,收益表，修改收益的回报方式 2，添加收货地址信息
 				 */
 				criteria.andUserIdEqualTo(orders.getUserId());
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				list = orderDao.selectByExample(example, criteria);
-				if(list!=null && list.size()>0){
+				if (list != null && list.size() > 0) {
 					AppUserAddress address = userAddressService.selectUserAddressById(orders.getAddressId());
-					if(orderAddressService.selectAddressByOrderId(list.get(0).getOrderId())==null){
-						if (orderAddressService.insertAddress(list.get(0).getOrderId(), address, orders.getRemark()) > 0) {
+					if (orderAddressService.selectAddressByOrderId(list.get(0).getOrderId()) == null) {
+						if (orderAddressService.insertAddress(list.get(0).getOrderId(), address,
+								orders.getRemark()) > 0) {
 							logger.info("insert order address success  buy type 3");
+							flag = 1;
 						}
-					}else{
-						orderAddressService.updateorderAddress(list.get(0).getOrderId(),address);
+					} else {
+						flag = orderAddressService.updateorderAddress(list.get(0).getOrderId(), address);
 					}
-				
+
 				}
+			} else if (orders.getType() == 1) {
+				// 表示的是抢购生成的订单，需要修改项目表中项目剩余的数量
+				order.setNum(Short.parseShort("-"+orders.getNum()));
+				flag = projectService.updateProject(orders.getRelationId(),orders.getNum());
 			}
-			// 发送消息,生成订单成功
-			criteria.andUserIdEqualTo(order.getUserId());
-			criteria.andOrderCodeEqualTo(order.getOrderCode());
-			order = orderDao.selectByExample(example, criteria).get(0);
-			String ss = "";
-			switch (order.getStatus()) {
-			case -1:
-				ss = "已取消";
-				break;
-			case 1:
-				ss = "未付款";
-				break;
-			case 2:
-				ss = "付款中";
-				break;
-			case 3:
-				ss = "已付款";
-				break;
-			case 4:
-				ss = "已选择处理方式";
-				break;
-			case 5:
-				ss = "已确认收货";
-				break;
-			default:
-				ss = "新增";
+			if (flag == 1) {
+
+				// 发送消息,生成订单成功
+				criteria.andUserIdEqualTo(order.getUserId());
+				criteria.andOrderCodeEqualTo(order.getOrderCode());
+				order = orderDao.selectByExample(example, criteria).get(0);
+				String ss = "";
+				switch (order.getStatus()) {
+				case -1:
+					ss = "已取消";
+					break;
+				case 1:
+					ss = "未付款";
+					break;
+				case 2:
+					ss = "付款中";
+					break;
+				case 3:
+					ss = "已付款";
+					break;
+				case 4:
+					ss = "已选择处理方式";
+					break;
+				case 5:
+					ss = "已确认收货";
+					break;
+				default:
+					ss = "新增";
+				}
+				String msg = "您的订单编号为【" + order.getOrderCode() + "】 的" + ss + "的订单" + ss + "成功";
+				messageService.addMessage(order.getUserId(), msg, 1, order.getOrderId(), new Integer(1).byteValue());
 			}
-			String msg = "您的订单编号为【" + order.getOrderCode() + "】 的" + ss + "的订单" + ss + "成功";
-			messageService.addMessage(order.getUserId(), msg, 1, order.getOrderId(), new Integer(1).byteValue());
 			Map<String, Object> returnmap = new HashMap<String, Object>();
 			returnmap.put("ctime", order.getCtime() == null ? null : order.getCtime().getTime());
 			returnmap.put("orderCode", order.getOrderCode());
-			
 			returnmap.put("projectName", map.get("name"));
 			returnmap.put("projectId", map.get("paincbuy_project_id"));
 			returnmap.put("imgs", map.get("imgs"));
@@ -306,10 +315,14 @@ public class OrderServiceImpl implements OrderService {
 		if (orderDao.updateOrder(getOrder(order, 1)) >= 1) {
 			if (order.getType() == 2 || order.getType() == 3) {
 				// 表示屠宰配送
-				Map<String, Object> orderMap = earningsService.selectInvestOne(order.getUserId(), order.getRelationId());
-				earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()), 
-						Byte.parseByte("0"),
-						Long.parseLong(orderMap.get("earningsId").toString()), order.getUserId());
+				criteria.andOrderIdEqualTo(order.getOrderId());
+				Map<String, Object> orderMap = earningsService.selectInvestOne(order.getUserId(),
+						orderDao.selectByExample(example, criteria).get(0).getRelationId());
+				earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()),
+						Byte.parseByte("0"), Long.parseLong(orderMap.get("earningsId").toString()), order.getUserId());
+			}
+			if(order.getStatus()==-1){
+				projectService.updateProject(order.getRelationId(), order.getNum());
 			}
 			AppOrder aa = orderDao.selectByExample(example, criteria).get(0);
 			String ss = "";
@@ -444,11 +457,11 @@ public class OrderServiceImpl implements OrderService {
 			long relationId) {
 		AppUserAddress useraddr = userAddressService.selectUserDefault(userId);
 		Map<String, Object> datamap = getFeiyong(fengeWayId, fentiwayId, guige, userId, relationId);
-		String addrString ="";
-		if(useraddr.getProvince()!=null){
-			addrString =areaServicel.selectValueByid(useraddr.getProvince());
-		}else if(useraddr.getCity()!=null){
-			addrString =areaServicel.selectValueByid(useraddr.getCity());
+		String addrString = "";
+		if (useraddr.getProvince() != null) {
+			addrString = areaServicel.selectValueByid(useraddr.getProvince());
+		} else if (useraddr.getCity() != null) {
+			addrString = areaServicel.selectValueByid(useraddr.getCity());
 		}
 		datamap.put("address", addrString + useraddr.getAddress());
 		datamap.put("addressId", useraddr.getAddressId());
@@ -472,25 +485,25 @@ public class OrderServiceImpl implements OrderService {
 		criteria.andUserIdEqualTo(userId);
 		criteria.andRelationIdEqualTo(relationId);
 		list = orderDao.selectByExample(example, criteria);
-		AppOrderExtFee extfee=orderExtFeeService.selectByorderId(list.get(0).getOrderId());
-		if(extfee==null){
+		AppOrderExtFee extfee = orderExtFeeService.selectByorderId(list.get(0).getOrderId());
+		if (extfee == null) {
 			orderExtFeeService.addOrderExtFee(list.get(0).getOrderId(),
-					new BigDecimal(datamap.get("totalMoney").toString()), Integer.parseInt(datamap.get("num").toString()),
+					new BigDecimal(datamap.get("totalMoney").toString()),
+					Integer.parseInt(datamap.get("num").toString()),
 					new BigDecimal(datamap.get("singleSendMoney").toString()),
 					new BigDecimal(datamap.get("singleDivisionMoney").toString()), fengeWayId == 18 ? 1 : 2, fengti,
 					new BigDecimal(datamap.get("singlePackageMoney").toString()), guige,
-					Integer.parseInt(datamap.get("weight").toString())/500,
+					Integer.parseInt(datamap.get("weight").toString()) / 500,
 					Integer.parseInt(datamap.get("packageNum").toString()));
-		}
-		else{
-			extfee=new AppOrderExtFee();
+		} else {
+			extfee = new AppOrderExtFee();
 			extfee.setOrderId(list.get(0).getOrderId());
 			extfee.setPayMoney(new BigDecimal(datamap.get("totalMoney").toString()));
 			extfee.setNum(Integer.parseInt(datamap.get("num").toString()));
 			extfee.setSlaughterFee(new BigDecimal(datamap.get("singleSendMoney").toString()));
 			extfee.setDivisionFee(new BigDecimal(datamap.get("singleDivisionMoney").toString()));
-			extfee.setDivisionType(Byte.parseByte((fengeWayId == 18 ? 1 : 2)+""));
-			extfee.setDivisionMode(Byte.parseByte(fengti+""));
+			extfee.setDivisionType(Byte.parseByte((fengeWayId == 18 ? 1 : 2) + ""));
+			extfee.setDivisionMode(Byte.parseByte(fengti + ""));
 			extfee.setPackageFee(new BigDecimal(datamap.get("singlePackageMoney").toString()));
 			extfee.setSpec(guige);
 			extfee.setWeight(new BigDecimal(datamap.get("weight").toString()).divide(new BigDecimal("500")));
@@ -518,7 +531,7 @@ public class OrderServiceImpl implements OrderService {
 		}
 		if (fengeWayId == 19 && guige != 0) {
 			// 表示的是细分割
-			fenfei = new BigDecimal(sysconfigService.queryByCode(SysConstant.DIVISION_THICK_FEE));
+			fenfei = new BigDecimal(sysconfigService.queryByCode(SysConstant.DIVISION_THIN_FEE));
 			BigDecimal baozhuangfei = new BigDecimal(sysconfigService.queryByCode(SysConstant.PACKAGE_FEE));
 			// 单只包装数
 			packageNum = danwight.multiply(BigDecimal.valueOf(500))
@@ -563,12 +576,12 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public Map<String, Object> getOrderAddr(HttpServletRequest request, long userId) {
 		AppUserAddress useraddr = userAddressService.selectUserDefault(userId);
-		Map<String, Object> datamap=new HashMap<String, Object>();
-		String addrString ="";
-		if(useraddr.getProvince()!=null){
-			addrString =areaServicel.selectValueByid(useraddr.getProvince());
-		}else if(useraddr.getCity()!=null){
-			addrString =areaServicel.selectValueByid(useraddr.getCity());
+		Map<String, Object> datamap = new HashMap<String, Object>();
+		String addrString = "";
+		if (useraddr.getProvince() != null) {
+			addrString = areaServicel.selectValueByid(useraddr.getProvince());
+		} else if (useraddr.getCity() != null) {
+			addrString = areaServicel.selectValueByid(useraddr.getCity());
 		}
 		datamap.put("address", addrString + useraddr.getAddress());
 		datamap.put("addressId", useraddr.getAddressId());

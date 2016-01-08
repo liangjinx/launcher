@@ -132,7 +132,7 @@ public class SysconfigServiceImpl implements SysconfigService {
 				returnmap.put("signkey", sysConfig.getValue());
 			}
 		}
-		returnmap.put("notify_url", "http://pctest.bajiewg.com/notify");
+		returnmap.put("notify_url", "http://pctest.bajiewg.com:9999/notify");
 		returnmap.put("sign_type", "RSA");
 		returnmap.put("input_charset", "utf-8");
 		return returnmap;

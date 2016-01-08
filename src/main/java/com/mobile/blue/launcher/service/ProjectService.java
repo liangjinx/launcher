@@ -13,4 +13,6 @@ public interface ProjectService {
 
 	Map<String, Object> selectCanPreProjectOne();
 
+	int updateProject(Long paincbuyProjectId, Short num);
+
 }

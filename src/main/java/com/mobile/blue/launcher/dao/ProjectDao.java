@@ -10,4 +10,6 @@ public interface ProjectDao {
 
 	List<AppProject> selectByExample(AppProjectExample example, Criteria criteria);
 
+	int updateProject(AppProject project);
+
 }
