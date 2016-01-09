@@ -176,16 +176,26 @@ public class OrderServiceImpl implements OrderService {
 		Criteria criteria = example.createCriteria();
 		if (orders.getType() == 2 || orders.getType() == 3) {
 			Map<String, Object> orderMap = earningsService.selectInvestOne(orders.getUserId(), orders.getRelationId());
-			String vlaue = earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()),
-					Byte.parseByte("3"), Long.parseLong(orderMap.get("earningsId").toString()), orders.getUserId());
-			JSONObject json = new JSONObject();
-			json = (JSONObject) json.parse(vlaue);
-			if (Integer.parseInt(json.getShort("status").toString()) == 1) {
-
-			} else {
-				return vlaue;
+			String vlaue = null;
+			if (orderMap != null) {
+				vlaue = earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()),
+						Byte.parseByte("3"), Long.parseLong(orderMap.get("earningsId").toString()), orders.getUserId());
 			}
+			if (vlaue != null) {
+				JSONObject json = new JSONObject();
+				json = (JSONObject) json.parse(vlaue);
+				if (Integer.parseInt(json.getShort("status").toString()) == 1) {
 
+				} else {
+					return vlaue;
+				}
+			}
+			if(orders.getType() == 2){
+				orders.setStatus(Byte.parseByte("1"));
+			}
+			if(orders.getType() == 3){
+				orders.setStatus(Byte.parseByte("4"));
+			}
 		}
 		// 以上表示老订单
 		Map<String, Object> map = projectService.selectById(orders.getRelationId());
@@ -202,7 +212,6 @@ public class OrderServiceImpl implements OrderService {
 			orders.setProjectName(map.get("name").toString());
 		}
 		orders.setIsShow(Byte.parseByte("1"));
-		orders.setStatus(Byte.parseByte("1"));
 		AppOrder order = getOrder(orders, 2);
 		int flag = 0;
 		if (orderDao.insertOrder(order) > 0) {
@@ -223,14 +232,15 @@ public class OrderServiceImpl implements OrderService {
 				criteria.andRelationIdEqualTo(orders.getRelationId());
 				list = orderDao.selectByExample(example, criteria);
 				AppUserAddress adr = userAddressService.selectUserAddressById(orders.getAddressId());
-				adr.setUserId(orders.getUserId());
-				if (list == null || list.size() <= 0) {
-					if (orderAddressService.insertAddress(list.get(0).getOrderId(), adr, orders.getRemark()) > 0) {
-						logger.info("insert order address success buy type 2");
-						flag = 1;
+				if (adr != null) {
+					adr.setUserId(orders.getUserId());
+					if (list == null || list.size() <= 0) {
+						if (orderAddressService.insertAddress(list.get(0).getOrderId(), adr, orders.getRemark()) > 0) {
+							logger.info("insert order address success buy type 2");
+							flag = 1;
+						}
 					}
 				}
-
 			} else if (orders.getType() == 3) {
 				// 表示领取活猪,
 				/**
@@ -254,8 +264,9 @@ public class OrderServiceImpl implements OrderService {
 				}
 			} else if (orders.getType() == 1) {
 				// 表示的是抢购生成的订单，需要修改项目表中项目剩余的数量
-				order.setNum(Short.parseShort("-"+orders.getNum()));
-				flag = projectService.updateProject(orders.getRelationId(),orders.getNum());
+				order.setNum(orders.getNum());
+				int type = 1;
+				flag = projectService.updateProject(orders.getRelationId(), orders.getNum(), type);
 			}
 			if (flag == 1) {
 
@@ -310,6 +321,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public int updateOrderBasic(RequestOrderVo order) {
+		logger.info("order:"+order.toString());
 		AppOrderExample example = new AppOrderExample();
 		Criteria criteria = example.createCriteria();
 		if (orderDao.updateOrder(getOrder(order, 1)) >= 1) {
@@ -321,10 +333,13 @@ public class OrderServiceImpl implements OrderService {
 				earningsService.updateReturnWay(Byte.parseByte(orderMap.get("dealType").toString()),
 						Byte.parseByte("0"), Long.parseLong(orderMap.get("earningsId").toString()), order.getUserId());
 			}
-			if(order.getStatus()==-1){
-				projectService.updateProject(order.getRelationId(), order.getNum());
+			if (order.getStatus() == -1) {
+				int type = 0;
+				criteria.andOrderCodeEqualTo(order.getOrderCode());
+				projectService.updateProject(orderDao.selectByExample(example, criteria).get(0).getRelationId(),
+						order.getNum(), type);
 			}
-			AppOrder aa = orderDao.selectByExample(example, criteria).get(0);
+			// AppOrder aa = orderDao.selectByExample(example, criteria).get(0);
 			String ss = "";
 			switch (order.getStatus()) {
 			case -1:
@@ -348,7 +363,7 @@ public class OrderServiceImpl implements OrderService {
 			default:
 				ss = "新加";
 			}
-			String msg = "您的订单编号为【" + aa.getOrderCode() + "】 的" + ss + "的订单" + ss + "成功";
+			String msg = "您的订单编号为【" + order.getOrderCode() + "】 的" + ss + "的订单" + ss + "成功";
 			messageService.addMessage(order.getUserId(), msg, order.getStatus(), order.getOrderId(),
 					new Integer(1).byteValue());
 			return 1;

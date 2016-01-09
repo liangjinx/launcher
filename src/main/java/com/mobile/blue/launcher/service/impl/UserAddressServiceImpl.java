@@ -135,6 +135,9 @@ public class UserAddressServiceImpl implements UserAddressService {
 		Criteria criteria = userAddressExample.createCriteria();
 		criteria.andAddressIdEqualTo(addressId);
 		list=useraddressDao.selectByExample(userAddressExample, criteria);
+		if(list==null || list.size()<=0){
+			return null;
+		}
 		return list.get(0);
 	}
 }

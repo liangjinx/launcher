@@ -138,14 +138,25 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public int updateProject(Long paincbuyProjectId, Short num) {
+	public int updateProject(Long paincbuyProjectId, Short num, int type) {
 		AppProjectExample example = new AppProjectExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andPaincbuyProjectIdEqualTo(paincbuyProjectId);
 		list = projectDao.selectByExample(example, criteria);
+		if(list==null || list.size()<0){
+			return -1;
+		}
 		AppProject project=list.get(0);
 		project.setPaincbuyProjectId(paincbuyProjectId);
-		project.setLeftNum(Short.parseShort(project.getLeftNum()+num+""));
+		if(type==1){
+			//表示增加订单，剩余数量减少
+			project.setLeftNum(Short.parseShort(project.getLeftNum()-num+""));
+		}
+		if(type==0){
+//			表示取消订单，剩余数量增加
+			project.setLeftNum(Short.parseShort(project.getLeftNum()+num+""));
+		}
+		
 		return projectDao.updateProject(project);
 	}
 

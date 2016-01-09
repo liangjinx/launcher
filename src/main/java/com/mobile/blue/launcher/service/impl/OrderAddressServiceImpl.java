@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import com.mobile.blue.launcher.service.OrderAddressService;
 
 @Service("orderAddressService")
 public class OrderAddressServiceImpl implements OrderAddressService {
+	private Log logger = LogFactory.getLog(this.getClass());
 	List<AppOrderAddress> list = null;
 	@Autowired
 	private OrderAddressDao orderAddressDao;
@@ -25,6 +28,7 @@ public class OrderAddressServiceImpl implements OrderAddressService {
 
 	@Override
 	public Map<String, Object> selectAddressByOrderId(Long orderId) {
+		logger.info("orderId:"+orderId);
 		AppOrderAddressExample example = new AppOrderAddressExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andOrderIdEqualTo(orderId);
@@ -32,8 +36,16 @@ public class OrderAddressServiceImpl implements OrderAddressService {
 		Map<String, Object> map = null;
 		if (list!=null && list.size() > 0) {
 			map = new HashMap<String, Object>();
-			map.put("province", areaService.selectById(list.get(0).getProvince()).getName());
-			map.put("city", areaService.selectById(list.get(0).getCity()).getName());
+			if(list.get(0).getProvince()!=null){
+				map.put("province", areaService.selectById(list.get(0).getProvince()).getName());
+			}else{
+				map.put("province","");
+			}
+			if(list.get(0).getCity()!=null){
+				map.put("city", areaService.selectById(list.get(0).getCity()).getName());
+			}else{
+				map.put("city","");
+			}
 			map.put("address", list.get(0).getAddress());
 		}
 		return map;

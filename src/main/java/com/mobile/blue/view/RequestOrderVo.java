@@ -35,6 +35,15 @@ public class RequestOrderVo implements Serializable {
 		this.addressId = addressId;
 	}
 
+	@Override
+	public String toString() {
+		return "RequestOrderVo [orderId=" + orderId + ", userId=" + userId + ", relationId=" + relationId + ", status="
+				+ status + ", num=" + num + ", price=" + price + ", totalMoney=" + totalMoney + ", payTime=" + payTime
+				+ ", remark=" + remark + ", confirmTime=" + confirmTime + ", isShow=" + isShow + ", type=" + type
+				+ ", payType=" + payType + ", orderCode=" + orderCode + ", projectName=" + projectName + ", overTime="
+				+ overTime + ", addressId=" + addressId + "]";
+	}
+
 	public Date getOverTime() {
 		return overTime;
 	}
