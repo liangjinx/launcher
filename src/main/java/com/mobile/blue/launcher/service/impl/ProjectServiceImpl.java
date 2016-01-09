@@ -94,7 +94,7 @@ public class ProjectServiceImpl implements ProjectService {
 			returnlist.add(map);
 		}
 		List<AppUserExt> listext=userExtService.selectUserExt(userId);
-		if(listext==null || list.size()<=0){
+		if(listext==null || listext.size()<=0){
 			returnmap.put("type", 0);
 			returnmap.put("num", 0);
 		}else{

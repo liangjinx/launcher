@@ -50,7 +50,7 @@ public class UserAddressServiceImpl implements UserAddressService {
 		list = useraddressDao.selectByExample(userAddressExample, criteria);// 查询用户的所有信息
 		if (list.size() <= 0) {
 		}
-		request.getSession().setAttribute("yinhanglist", page);
+		request.getSession().setAttribute("shouhuodizhi", page);
 		for (AppUserAddress userAddress : list) {
 			userAddress.setAddress(
 					areaService.selectQuanAddressList(userAddress.getCity() == null ? 0 : userAddress.getCity(),

@@ -2,6 +2,8 @@ package com.mobile.blue.launcher.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import com.mobile.blue.util.constant.StatusConstant.Status;
 
 @Controller
 public class UserAddressController {
+	private Log logger = LogFactory.getLog(this.getClass());
 	@Autowired
 	private UserAddressService userAddressService;
 
@@ -35,6 +38,7 @@ public class UserAddressController {
 	@Transactional
 	public @ResponseBody Object SelectUserAdds(HttpServletRequest request, ModelMap model, long userId,int nextPage)
 			throws Exception {
+		logger.info("request:"+request.getSession().getId());
 		return ResultUtil.getResultJson(userAddressService.selectUserAllAdress(request,nextPage,userId), Status.success.getStatus(),
 				Status.success.getMsg());
 	}
