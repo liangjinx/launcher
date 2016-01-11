@@ -1,6 +1,5 @@
 package com.mobile.blue.launcher.service.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -9,11 +8,13 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import com.mobile.blue.launcher.dao.UserDao;
 import com.mobile.blue.launcher.model.AppBankPersonInfo;
@@ -29,6 +30,7 @@ import com.mobile.blue.launcher.service.SysconfigService;
 import com.mobile.blue.launcher.service.UserBasicService;
 import com.mobile.blue.launcher.service.UserExtService;
 import com.mobile.blue.launcher.service.WalletService;
+import com.mobile.blue.util.CompressPic;
 import com.mobile.blue.util.DateUtil;
 import com.mobile.blue.util.HttpSender;
 import com.mobile.blue.util.PageParameter;
@@ -104,7 +106,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 		} catch (Exception e) {
 			return ResultUtil.getResultJson(Status.verifyCodeSendFail.getStatus(), Status.verifyCodeSendFail.getMsg());
 		} // 发送消息
-		logger.info("request.getsession"+request.getSession().getId());
+		logger.info("request.getsession" + request.getSession().getId());
 		request.getSession().setAttribute(phone, Verif_code);
 		request.getSession().setMaxInactiveInterval(BasicConstant.VERIF_CODE_time * 60);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -148,8 +150,8 @@ public class UserBasicServiceImpl implements UserBasicService {
 		}
 		// 设置用户的预抢默认设置
 		flag = userExtService.insertUserExt(user.getUserId());
-		if(flag==1){
-			flag=walletService.addWallet(user.getUserId());
+		if (flag == 1) {
+			flag = walletService.addWallet(user.getUserId());
 		}
 		if (flag == 1) {
 			// 所有都执行成功的时候的返回值
@@ -231,7 +233,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 			user.setLastLoginIp(Long.parseLong(IpConvert.StringToBigInt(RequestUtil.getIpAddr(request)).toString()));
 			user.setLastLoginTime(DateUtil.getCurrentDate());
 			userDao.updateUserByUserIdOrPhone(user);
-			Map<String, Object> returnmap=new HashMap<String, Object>();
+			Map<String, Object> returnmap = new HashMap<String, Object>();
 			returnmap.put("userId", list.get(0).getUserId());
 			returnmap.put("username", list.get(0).getUsername());
 			returnmap.put("nickname", list.get(0).getNickname());
@@ -267,19 +269,21 @@ public class UserBasicServiceImpl implements UserBasicService {
 
 	// 查询朋友信息
 	@Override
-	public List<AppUser> selectById(HttpServletRequest request, List<Long> freindId, int nextpage, boolean isoldfriend) {
+	public List<AppUser> selectById(HttpServletRequest request, List<Long> freindId, int nextpage,
+			boolean isoldfriend) {
 		AppUserExample userExample = new AppUserExample();
 		Criteria criteria = userExample.createCriteria();
 		if (freindId.size() <= 0)
 			return null;
-		PageParameter page=(PageParameter) request.getSession().getAttribute(isoldfriend+"friend"+freindId.size());
-		if(page==null){
-			page = new PageParameter(0,BasicConstant.limit_page_size);
+		PageParameter page = (PageParameter) request.getSession()
+				.getAttribute(isoldfriend + "friend" + freindId.size());
+		if (page == null) {
+			page = new PageParameter(0, BasicConstant.limit_page_size);
 			criteria.andUserIdIn(freindId);
-			int count=userDao.countByExample(userExample, criteria);
+			int count = userDao.countByExample(userExample, criteria);
 			page.setCount(count);
-		}else{
-			if(nextpage>page.getTotal()){
+		} else {
+			if (nextpage > page.getTotal()) {
 				return null;
 			}
 			page.setCurrent(nextpage);
@@ -287,38 +291,37 @@ public class UserBasicServiceImpl implements UserBasicService {
 		criteria.andUserIdIn(freindId);
 		userExample.setPage(page);
 		list = userDao.selectByExample(userExample, criteria);
-		request.getSession().setAttribute(isoldfriend+"friend"+freindId.size(), page);
+		request.getSession().setAttribute(isoldfriend + "friend" + freindId.size(), page);
 		return list;
 	}
 
 	// 搜索不是好友的朋友列表,是模糊查询
 	@Override
-	public List<AppUser> searchFriends(HttpServletRequest request,List<Long> list, String serachValue,int nextpage) {
+	public List<AppUser> searchFriends(HttpServletRequest request, List<Long> list, String serachValue, int nextpage) {
 		AppUserExample userExample = new AppUserExample();
 		Criteria criteria = userExample.createCriteria();
-		
-		PageParameter page=(PageParameter) request.getSession().getAttribute("searchFriends"+serachValue);
-		if(page==null){
-			page = new PageParameter(0,BasicConstant.limit_page_size);
+
+		PageParameter page = (PageParameter) request.getSession().getAttribute("searchFriends" + serachValue);
+		if (page == null) {
+			page = new PageParameter(0, BasicConstant.limit_page_size);
 			userExample.setDistinct(true);
 			if (list.size() <= 0) {
 			} else {
 				criteria.andUserIdNotIn(list);
 			}
-			String serachString1="%"+ serachValue + "%";
-			if (Verification.isPhone(serachValue)){
-				logger.info("查询的手机号码是"+serachValue);
+			String serachString1 = "%" + serachValue + "%";
+			if (Verification.isPhone(serachValue)) {
+				logger.info("查询的手机号码是" + serachValue);
 				criteria.andPhoneLike(serachString1);
-			}
-			else {
-//				criteria.andNicknameLike(serachValue);
+			} else {
+				// criteria.andNicknameLike(serachValue);
 				criteria.andUsernameLike(serachString1);
-				logger.info("查询的用户名或昵称是"+serachValue);
+				logger.info("查询的用户名或昵称是" + serachValue);
 			}
-			int count=userDao.countByExample(userExample, criteria);
+			int count = userDao.countByExample(userExample, criteria);
 			page.setCount(count);
-		}else{
-			if(nextpage>page.getTotal()){
+		} else {
+			if (nextpage > page.getTotal()) {
 				return null;
 			}
 			page.setCurrent(nextpage);
@@ -328,20 +331,19 @@ public class UserBasicServiceImpl implements UserBasicService {
 		} else {
 			criteria.andUserIdNotIn(list);
 		}
-		String serachString1="%"+ serachValue + "%";
-		if (Verification.isPhone(serachValue)){
-			logger.info("查询的手机号码是"+serachValue);
+		String serachString1 = "%" + serachValue + "%";
+		if (Verification.isPhone(serachValue)) {
+			logger.info("查询的手机号码是" + serachValue);
 			criteria.andPhoneLike(serachString1);
-		}
-		else {
-//			criteria.andNicknameLike(serachValue);
+		} else {
+			// criteria.andNicknameLike(serachValue);
 			criteria.andUsernameLike(serachString1);
-			logger.info("查询的用户名或昵称是"+serachValue);
+			logger.info("查询的用户名或昵称是" + serachValue);
 		}
-		logger.info("page:"+page.toString());
+		logger.info("page:" + page.toString());
 		userExample.setPage(page);
-		List<AppUser> listUser=userDao.selectByExample(userExample, criteria);
-		request.getSession().setAttribute("searchFriends"+serachValue, page);
+		List<AppUser> listUser = userDao.selectByExample(userExample, criteria);
+		request.getSession().setAttribute("searchFriends" + serachValue, page);
 		return listUser;
 	}
 
@@ -378,7 +380,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 		AppUserExample userExample = new AppUserExample();
 		Criteria criteria = userExample.createCriteria();
 		if (type == 1) {
-			logger.info("oldpassword"+oldpassword);
+			logger.info("oldpassword" + oldpassword);
 			criteria.andUserIdEqualTo(userId);
 			criteria.andPasswordEqualTo(oldpassword);
 			if (userDao.countByExample(userExample, criteria) > 0)
@@ -393,22 +395,21 @@ public class UserBasicServiceImpl implements UserBasicService {
 
 	@Override
 	public String selecePersonInfo(long userId) {
-		List<AppBankPersonInfo> personinfoList=bankPersonInfoService.selectByUserId(userId);
-		List<Map<String, Object>> returnlist=new ArrayList<Map<String, Object>>();
-		Map<String,Object> returnmap=null;
-		if(personinfoList!=null && personinfoList.size()>0){
-			for(AppBankPersonInfo bankPerson:personinfoList){
-				returnmap=new HashMap<String,Object>();
+		List<AppBankPersonInfo> personinfoList = bankPersonInfoService.selectByUserId(userId);
+		List<Map<String, Object>> returnlist = new ArrayList<Map<String, Object>>();
+		Map<String, Object> returnmap = null;
+		if (personinfoList != null && personinfoList.size() > 0) {
+			for (AppBankPersonInfo bankPerson : personinfoList) {
+				returnmap = new HashMap<String, Object>();
 				returnmap.put("personId", bankPerson.getPersonId());
 				returnmap.put("name", bankPerson.getName());
 				returnmap.put("idCard", bankPerson.getIdCard());
-				returnmap.put("ctime", bankPerson.getCtime()==null?null:bankPerson.getCtime().getTime());
+				returnmap.put("ctime", bankPerson.getCtime() == null ? null : bankPerson.getCtime().getTime());
 				returnmap.put("userId", bankPerson.getUserId());
 				returnlist.add(returnmap);
 			}
 		}
-		return ResultUtil.getResultJson(returnlist, Status.success.getStatus(),
-				Status.success.getMsg());
+		return ResultUtil.getResultJson(returnlist, Status.success.getStatus(), Status.success.getMsg());
 	}
 
 	/**
@@ -436,28 +437,25 @@ public class UserBasicServiceImpl implements UserBasicService {
 
 		String fileAccessPath = "/" + DateUtil.getCurrentDateStr(BasicConstant.DATE_PATH_FILE) + "//headImgFile/";
 		String uploadPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_UPLOAD_ROOT_PATH) + fileAccessPath;
-//		fileAccessPath = sysconfigService.queryByCode(SysConstant.PROJECT_IMG_ACCESS_URL) + fileAccessPath;
-		fileAccessPath="http://120.25.102.41:8181/resources/"+fileAccessPath;
+		// fileAccessPath =
+		// sysconfigService.queryByCode(SysConstant.PROJECT_IMG_ACCESS_URL) +
+		// fileAccessPath;
+		fileAccessPath = "http://120.25.102.41:8181/resources/" + fileAccessPath;
 		String newFileName = System.currentTimeMillis() + "." + fileTypes;
-		logger.info("uploadPath:"+uploadPath+",newFileName:"+newFileName);
-		logger.info("fileAccessPath:"+fileAccessPath+",newFileName:"+newFileName);
-		File localFile = new File(uploadPath,newFileName);
-		// 保存文件到服务器并保存保存文件的路径到数据库
-		if (!localFile.exists()) {
-			localFile.mkdirs(); 
-		}
-		// 手动设置以下权限。
-		localFile.setWritable(true, false);
-		if (!localFile.exists()) {
-			localFile.mkdirs();
-		}
-		file.transferTo(localFile);
-		 user.setHeadImg(fileAccessPath + newFileName);
-		 Map<String, Object> returnmap=new HashMap<String, Object>();
-		 returnmap.put("url", user.getHeadImg());
-		 returnmap.put("userId", user.getUserId());
+		logger.info("uploadPath:" + uploadPath + ",newFileName:" + newFileName);
+		logger.info("fileAccessPath:" + fileAccessPath + ",newFileName:" + newFileName);
+		//保存图片，对图片进行处理
+		CompressPic com = new CompressPic();
+	    CommonsMultipartFile cf= (CommonsMultipartFile)file; 
+        DiskFileItem fi = (DiskFileItem)cf.getFileItem(); 
+		com.compressPic(fi.getStoreLocation(), uploadPath, newFileName, 120, 120, false);
+		//保存图片，对图片进行处理 end
+		user.setHeadImg(fileAccessPath + newFileName);
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		returnmap.put("url", user.getHeadImg());
+		returnmap.put("userId", user.getUserId());
 		if (userDao.updateUserByUserIdOrPhone(user) >= 1)
-			return ResultUtil.getResultJson(returnmap,Status.success.getStatus(), Status.success.getMsg());
+			return ResultUtil.getResultJson(returnmap, Status.success.getStatus(), Status.success.getMsg());
 		return ResultUtil.getResultJson(Status.headimgNullity.getStatus(), Status.headimgNullity.getMsg());
 	}
 
@@ -467,7 +465,7 @@ public class UserBasicServiceImpl implements UserBasicService {
 		Criteria criteria = userExample.createCriteria();
 		criteria.andUserIdEqualTo(userId);
 		list = userDao.selectByExample(userExample, criteria);
-		if(list==null || list.size()<=0){
+		if (list == null || list.size() <= 0) {
 			return null;
 		}
 		return list.get(0);

@@ -17,7 +17,7 @@ import com.mobile.blue.util.constant.StatusConstant.Status;
 import com.mobile.blue.view.RequestOrderVo;
 
 @Controller
-public class Ordercontroller {
+public class OrderController {
 	@Autowired
 	private OrderService orderService;
 

@@ -343,10 +343,10 @@ public class EarningsServiceImpl implements EarningsService {
 		AppMyEarningsExample example = new AppMyEarningsExample();
 		Criteria criteria = example.createCriteria();
 		String day = sysconfigService.queryByCode(SysConstant.GROW_UP_DAYS);
-		criteria.andUserIdEqualTo(userId);
 		PageParameter page = (PageParameter) request.getSession().getAttribute("earningsRanking");
 		if (page == null) {
 			page = new PageParameter(0, BasicConstant.limit_page_size);
+			criteria.andUserIdEqualTo(userId);
 			int count = earningsDao.countByExample(example, criteria);
 			page.setCount(count);
 		} else {
@@ -355,6 +355,7 @@ public class EarningsServiceImpl implements EarningsService {
 			}
 			page.setCurrent(nextPage);
 		}
+		criteria.andUserIdEqualTo(userId);
 		example.setPage(page);
 		list = earningsDao.selectByExample(example, criteria);
 		if (list == null || list.size() <= 0) {
